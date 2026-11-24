@@ -56,7 +56,7 @@ function triangulate(points){
   return triangles;
 }
 // Subdivisão conforme: os triângulos vizinhos compartilham o mesmo ponto médio.
-function tessellate(outline,density){
+function tessellate(outline,density,faceBox){
   const contour=outline.filter((p,i)=>{
     const a=outline[(i+outline.length-1)%outline.length],b=outline[(i+1)%outline.length];
     return Math.abs((p[0]-a[0])*(b[1]-p[1])-(p[1]-a[1])*(b[0]-p[0]))>1e-8;
@@ -67,7 +67,10 @@ function tessellate(outline,density){
   for(let pass=0;pass<7;pass++){
     const mids=new Map(),out=[];
     function mid(i,j){
-      const a=points[i],b=points[j];if(Math.hypot(a[0]-b[0],a[1]-b[1])<=step)return -1;
+      const a=points[i],b=points[j];
+      // Local, conforming refinement around the face; all neighboring triangles share midpoints.
+      const inFace=faceBox&&Math.max(a[0],b[0])>=faceBox[0]&&Math.min(a[0],b[0])<=faceBox[2]&&Math.max(a[1],b[1])>=faceBox[1]&&Math.min(a[1],b[1])<=faceBox[3];
+      if(Math.hypot(a[0]-b[0],a[1]-b[1])<=step*(inFace?.25:1))return -1;
       const key=Math.min(i,j)+','+Math.max(i,j);
       if(!mids.has(key)){mids.set(key,points.length);points.push([(a[0]+b[0])/2,(a[1]+b[1])/2]);}
       return mids.get(key);
@@ -129,8 +132,10 @@ function sideEnvelope(side){
     return rows[lo].map((n,index)=>mix(n,rows[hi][index],i-lo));
   };
 }
-export function characterGeometry(outline,size,side,ref,detail=0){
-  const {points,triangles,distances}=tessellate(outline,detail>0?56:40),info=body(outline),b=info.bounds;
+export function characterGeometry(outline,size,side,ref,detail=0,faceBox){
+  const info=body(outline),b=info.bounds;
+  const localFace=faceBox?[b.left+faceBox[0]*b.width,b.top+faceBox[1]*b.height,b.left+faceBox[2]*b.width,b.top+faceBox[3]*b.height]:undefined;
+  const {points,triangles,distances}=tessellate(outline,detail>0?56:40,localFace);
   const swapped=outline.map(([x,y])=>[y,x]),half=info.chestWidth*.5;
   const lateral=sideEnvelope(side),roundness=[],centerDepth=[],noseProfile=[];
   const relief=ref&&detail>0?photoRelief(ref,b):null;

@@ -1,4 +1,6 @@
 // Refinamento opcional de volume por região. Exporta uma cópia mesh editável.
+import {faceOptions,facialOffset} from './face-training.js';
+import {characterGeometry} from './character.js';
 import {anatomicalDepth,currentDepthEnvelope,validateAnatomyOptions} from './anatomy-training.js';
 import {buildScene,validate,serializeProject} from './model.js';
 import {anatomy} from './silhouette.js';
@@ -8,13 +10,20 @@ const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 export function refineCharacter(source,id,options={}){
   const project=structuredClone(validate(source)),part=project.parts.find(p=>p.id===id);
   if(part?.profile?.form!=='humanoid'||part.shape!=='profile')throw Error('Escolha um perfil humanoide.');
-  const {anatomyStyle,anatomyStrength=.6,...regional}=options;
+  const {anatomyStyle,anatomyStrength=.6,face,...regional}=options;
+  const facial=faceOptions(face,part.profile.points);
   validateAnatomyOptions(anatomyStyle,anatomyStrength);
   const factors={head:1,torso:1,arms:1,legs:1,feet:1,...regional};
   for(const [k,v] of Object.entries(factors))if(!['head','torso','arms','legs','feet'].includes(k)||!Number.isFinite(v)||v<.65||v>1.4)throw Error('Fator regional inválido: '+k);
   const scene=buildScene(project,{textures:false});
+  let faceGeometry;
   try{
-    const obj=scene.objects.get(id),g=obj.geometry,p=g.attributes.position,uv=g.attributes.uv;
+    const obj=scene.objects.get(id);
+    if(facial?.strength>0){
+      const ref=project.references.find(r=>r.id===part.profile.reference);
+      faceGeometry=characterGeometry(part.profile.points,part.size,part.profile.side,ref,part.profile.detail,facial.box);
+    }
+    const g=faceGeometry??obj.geometry,p=g.attributes.position,uv=g.attributes.uv;
     const info=anatomy(part.profile.points),box=bounds(part.profile.points),chest=(info?.chestWidth??box.width*.31)/box.width;
     const armTop=info?.armTop??.18,armBottom=info?.armBottom??.34;
     const positions=[],texcoords=[];
@@ -33,7 +42,8 @@ export function refineCharacter(source,id,options={}){
       factor+=(factors.feet-factor)*feet;
       factor+=(factors.arms-factor)*arms;
       if(anatomyStyle)factor*=anatomicalDepth({row,x:(x/part.size[0]-center)/Math.max(.001,chest*.5),arms,front:i<half,style:anatomyStyle,strength:anatomyStrength,currentDepth:depthEnvelope,sideCalibrated:!!part.profile.side});
-      positions.push(x,y,mid+(z-mid)*factor);
+      const dz=i<half?facialOffset(x/part.size[0]+.5,row,Math.abs(z-p.getZ(other)),part.size[1],facial,!!part.profile.side):0;
+      positions.push(x,y,mid+(z-mid)*factor+dz);
       texcoords.push(uv.getX(i),uv.getY(i));
     }
     let matId=id.slice(0,75)+'-refined';
@@ -46,5 +56,5 @@ export function refineCharacter(source,id,options={}){
     part.shape='mesh';part.size=[1,1,1];part.material=matId;
     part.geometry={positions,uv:texcoords,indices:Array.from(g.index.array)};
     validate(project,{empty:false});serializeProject(project,false);return project;
-  }finally{scene.dispose();}
+  }finally{faceGeometry?.dispose();scene.dispose();}
 }

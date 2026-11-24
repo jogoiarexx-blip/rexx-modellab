@@ -128,3 +128,7 @@ Esqueleto humanoide em pose T, ajuste de articulações e prévias PNG: [documen
 ## Skinning 0.11
 
 GLB com esqueleto integrado, pesos automáticos e prévia de poses: [documentação](docs/SKINNING.md).
+
+## Animações 0.12
+
+Nove clips procedurais, prévias e exportação GLB animado: [documentação](docs/ANIMATIONS.md).

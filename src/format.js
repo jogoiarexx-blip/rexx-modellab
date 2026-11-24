@@ -125,7 +125,17 @@ export async function verifyGLB(buffer, source = null) {
     free(scene);
   }
 }
+// O exportador Three.js usa FileReader também no Node.js.
+function ensureFileReader(){
+  if(typeof globalThis.FileReader!=='undefined')return;
+  globalThis.FileReader=class {
+    readAsArrayBuffer(blob){
+      blob.arrayBuffer().then(value=>{this.result=value;this.onloadend?.();},error=>{this.error=error;this.onerror?.(error);});
+    }
+  };
+}
 export async function exportGLB(project) {
+  ensureFileReader();
   validate(project, { empty: false });
   const model = buildScene(project,{textures:false});
   try {

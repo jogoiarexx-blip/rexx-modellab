@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
 import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
+import { animationNames, getClip, exportAnimatedGLB, previewAnimation } from "../src/animation.js";
 import { exportSkinnedGLB, verifySkinnedGLB, hasSkin, previewPose } from "../src/skin.js";
 import { autoRig, adjustRig, previewRig } from "../src/rig.js";
 import { refineCharacter } from "../src/refine.js";
@@ -22,7 +23,10 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.11 · CLI
+const help = `REXX ModelLab 0.12 · CLI
+  node cli/modellab.js animations
+  node cli/modellab.js build personagem.modellab.json --rig personagem.rig.json --animations all --out personagem.glb
+  node cli/modellab.js animation-preview personagem.modellab.json --rig personagem.rig.json --clip walk --time .25 --out revisao
   node cli/modellab.js build personagem.modellab.json --rig personagem.rig.json --out personagem.glb
   node cli/modellab.js pose-preview personagem.modellab.json --rig personagem.rig.json --ops pose.json --out revisao
   node cli/modellab.js rig personagem.modellab.json --id character --out personagem.rig.json [--ops joints.json]
@@ -68,10 +72,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview"].includes(command)) throw Error("Comando desconhecido. Use --help.");
-  let rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
+  let animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -104,6 +109,9 @@ async function run() {
     if(a==="--detail")detail=Number(v);
     if(a==="--id")id=v;
     if(a==="--rig")rigFile=v;
+    if(a==="--animations")animationList=v==="all"?animationNames():v.split(",");
+    if(a==="--clip")clip=v;
+    if(a==="--time")time=Number(v);
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
@@ -136,11 +144,11 @@ async function run() {
     const rig=command==="rig"?autoRig(source,id,{joints}):adjustRig(source,joints);
     await atomic(out,json(rig));log({ok:true,bones:rig.bones.length,output:out,warnings:rig.warnings});return;
   }
-  if(command==="render"||command==="rig-preview"||command==="pose-preview"){
+  if(command==="render"||command==="rig-preview"||command==="pose-preview"||command==="animation-preview"){
     const p=JSON.parse((await read(input)).toString("utf8"));
     if(command!=="render"&&!rigFile)throw Error("Informe --rig.");
     const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):null;
-    const result=command==="pose-preview"?previewPose(p,rig,ops?JSON.parse((await read(ops)).toString("utf8")):{},{size,views}):command==="rig-preview"?previewRig(p,rig,{size,views}):renderViews(p,{size,views});
+    const result=command==="animation-preview"?previewAnimation(p,rig,clip,time,{size,views}):command==="pose-preview"?previewPose(p,rig,ops?JSON.parse((await read(ops)).toString("utf8")):{},{size,views}):command==="rig-preview"?previewRig(p,rig,{size,views}):renderViews(p,{size,views});
     const targets=[...Object.keys(result.images).map(v=>resolve(out,v+".png")),resolve(out,"report.json")];
     if(targets.some(t=>[input,rigFile,ops].filter(Boolean).some(s=>resolvePath(t)===resolvePath(s))))throw Error("Saída coincide com entrada.");
     for(const [v,image] of Object.entries(result.images))await atomic(resolve(out,v+".png"),encodePNG(image));
@@ -168,7 +176,9 @@ async function run() {
   if (command === "validate" && extname(input).toLowerCase() === ".glb") result = hasSkin(buffer)?await verifySkinnedGLB(buffer):await verifyGLB(buffer);
   else {
     const p = validate(JSON.parse(data.toString("utf8")));
-    const built = rigFile?await exportSkinnedGLB(p,JSON.parse((await read(rigFile)).toString("utf8"))):await exportGLB(p);
+    if(animationList&&!rigFile)throw Error("Animações exigem --rig.");
+    const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):null;
+    const built = animationList?await exportAnimatedGLB(p,rig,animationList):rig?await exportSkinnedGLB(p,rig):await exportGLB(p);
     result = built.report;
     if (command === "build" && !dry) {
       await atomic(out, new Uint8Array(built.buffer));

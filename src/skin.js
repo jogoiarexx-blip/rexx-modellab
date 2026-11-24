@@ -50,7 +50,7 @@ export function computeWeights(positions,rig){
   }
   return {joints,weights,report:{vertices:positions.length/3,mixedVertices:mixed,maxInfluences}};
 }
-function unpackGLB(buffer){
+export function unpackGLB(buffer){
   const v=new DataView(buffer);
   if(buffer.byteLength<28||v.getUint32(0,true)!==0x46546c67||v.getUint32(4,true)!==2||v.getUint32(8,true)!==buffer.byteLength)throw Error('GLB inválido.');
   const len=v.getUint32(12,true),next=20+len;
@@ -58,7 +58,7 @@ function unpackGLB(buffer){
   return {json:JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,20,len))),bin:new Uint8Array(buffer,next+8)};
 }
 export function hasSkin(buffer){return !!unpackGLB(buffer).json.skins?.length;}
-function packGLB(json,bin){
+export function packGLB(json,bin){
   const data=new TextEncoder().encode(JSON.stringify(json)),n=(data.length+3)&~3,b=(bin.length+3)&~3;
   const out=new Uint8Array(28+n+b),v=new DataView(out.buffer);
   v.setUint32(0,0x46546c67,true);v.setUint32(4,2,true);v.setUint32(8,out.length,true);
@@ -67,7 +67,7 @@ function packGLB(json,bin){
   if(out.length>MAX_BYTES)throw Error('GLB com rig excede 24 MiB.');
   return out.buffer;
 }
-function accessor(j,bin,id,type,component,components){
+export function accessor(j,bin,id,type,component,components){
   const a=j.accessors?.[id],b=j.bufferViews?.[a?.bufferView],bytes=component===5123?2:4;
   if(!a||!b||a.type!==type||a.componentType!==component||a.sparse||!Number.isInteger(a.count)||a.count<1||a.count>600000||b.buffer!==0)throw Error('Accessor de skin inválido.');
   const start=(b.byteOffset??0)+(a.byteOffset??0),stride=b.byteStride??components*bytes,end=start+(a.count-1)*stride+components*bytes;
@@ -134,6 +134,22 @@ export async function verifySkinnedGLB(buffer){
     }
   }
   if(!meshCount||!vertices)throw Error('GLB sem skin.');
+  const clips=j.animations??[];
+  if(clips.length>64)throw Error('Limite de animações excedido.');
+  const clipNames=new Set();
+  for(const clip of clips){
+    if(typeof clip.name!=='string'||clipNames.has(clip.name)||!clip.channels?.length||!clip.samplers?.length)throw Error('Animação inválida.');
+    clipNames.add(clip.name);const targets=new Set();
+    for(const ch of clip.channels){
+      if(ch.target?.path!=='rotation'||!skin.joints.includes(ch.target.node)||targets.has(ch.target.node))throw Error('Canal de animação inválido.');
+      targets.add(ch.target.node);
+      const s=clip.samplers[ch.sampler];
+      if(!s||s.interpolation!=='LINEAR')throw Error('Sampler de animação inválido.');
+      const t=accessor(j,bin,s.input,'SCALAR',5126,1),q=accessor(j,bin,s.output,'VEC4',5126,4);
+      if(t.length*4!==q.length||t[0]<0||!t.every((x,i)=>Number.isFinite(x)&&(!i||x>t[i-1])))throw Error('Tempos de animação inválidos.');
+      for(let i=0;i<q.length;i+=4)if(Math.abs(Math.hypot(...q.subarray(i,i+4))-1)>1e-4||!q.subarray(i,i+4).every(Number.isFinite))throw Error('Quaternion inválido.');
+    }
+  }
   const loaded=await new T.GLTFLoader().register(parser=>({name:'ModelLabJPEG',async loadTexture(i){const im=j.images[j.textures[i].source],data=await parser.getDependency('bufferView',im.bufferView);return imageMap(jpegURI(new Uint8Array(data)));}})).parseAsync(buffer,'');
   try{
     loaded.scene.updateMatrixWorld(true);let found=0,maxRestError=0;
@@ -147,7 +163,8 @@ export async function verifySkinnedGLB(buffer){
       }
     });
     if(!found||maxRestError>1e-4)throw Error('Pose de repouso divergente: '+maxRestError);
-    return {ok:true,format:'glTF 2.0 / GLB',profile:'skinned-pbr',reimported:true,bones:count,skinnedMeshes:found,vertices,maxInfluences,maxRestError,bytes:buffer.byteLength};
+    if(loaded.animations.length!==clips.length||loaded.animations.some(c=>!Number.isFinite(c.duration)||c.duration<=0||!c.tracks.length))throw Error('Animações divergentes na reimportação.');
+    return {ok:true,format:'glTF 2.0 / GLB',profile:'skinned-pbr',reimported:true,bones:count,skinnedMeshes:found,vertices,maxInfluences,maxRestError,animations:loaded.animations.map(c=>({name:c.name,duration:c.duration,tracks:c.tracks.length})),bytes:buffer.byteLength};
   }finally{loaded.scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.map?.dispose();o.material.dispose();}if(o.isSkinnedMesh)o.skeleton.dispose();});}
 }
 export function poseProject(source,rig,rotations={}){

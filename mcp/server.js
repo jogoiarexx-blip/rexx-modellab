@@ -15,6 +15,7 @@ import {previewPose,exportSkinnedGLB,verifySkinnedGLB,hasSkin} from '../src/skin
 import {exportGLB,verifyGLB} from '../src/format.js';
 import {animationNames,exportAnimatedGLB,previewAnimation} from '../src/animation.js';
 import {auditUV,editTextures} from '../src/texture.js';
+import {trainClothing} from '../src/clothing-training.js';
 import {refineCharacter} from '../src/refine.js';
 
 const filename=/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,119}$/;
@@ -117,6 +118,10 @@ define('edit_project','Aplica operações ModelLab em cópia, por exemplo update
 define('inspect_project','Inspeciona dimensões, malhas, triângulos e referências.',{project},['project'],false,async(w,a)=>resultText(inspectProject(await parse(w,a.project))));
 define('render_project','Retorna PNGs reais e relatório da malha para inspeção visual. Ordem indicada no relatório.',renderProps,['project'],false,async(w,a)=>previews(renderViews(await parse(w,a.project),{size:a.size??384,views:a.views??['front','back','left','iso']})));
 define('refine_character','Converte perfil em mesh com volumes regionais ajustados.',{project,id:str('ID da peça'),factors:obj('head, torso, arms, legs, feet'),output},['project','output'],true,async(w,a)=>resultText(await save(w,a.output,refineCharacter(await parse(w,a.project),a.id??'character',a.factors??{}))));
+define('train_clothing','Aplica relevo e acabamento procedural de roupas ao perfil humanoide original.',{project,id:str('ID da peça'),options:obj('Estilo suit, field, armor; strength, tint, tintStrength, features, refine'),output},['project','output'],true,async(w,a)=>{
+ const r=trainClothing(await parse(w,a.project),a.id??'character',a.options??{});
+ return resultText({...await save(w,a.output,r.project),report:r.report});
+});
 define('audit_uv','Diagnóstico de UV e texturas.',{project},['project'],false,async(w,a)=>resultText(auditUV(await parse(w,a.project))));
 define('edit_textures','Otimiza JPEG e permite ajustes UV e atlas em cópia.',{project,preset,options:obj('Opções de editTextures'),output},['project','output'],true,async(w,a)=>{
  const r=editTextures(await parse(w,a.project),{...a.options,...(a.preset?{preset:a.preset}:{})});

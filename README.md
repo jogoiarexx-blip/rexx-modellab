@@ -140,3 +140,7 @@ Auditoria UV, ajustes, otimização JPEG, atlas e mapas auxiliares: [documentaç
 ## MCP local 0.14
 
 Servidor stdio para agentes, com workspace restrito e prévias PNG: [configuração e ferramentas](docs/MCP.md).
+
+## REXX-TRAIN-08
+
+Vestuário procedural em relevo e acabamento: [documentação](docs/TRAIN-08-CLOTHING.md).

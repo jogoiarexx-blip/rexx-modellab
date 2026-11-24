@@ -12,6 +12,7 @@ import { parseMotionFBX } from "./fbx-motion.js";
 import { retargetMotion } from "../src/retarget.js";
 import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
+import { trainClothing } from "../src/clothing-training.js";
 import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
 import { auditUV, editTextures, materialMaps } from "../src/texture.js";
@@ -29,7 +30,8 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.13 · CLI
+const help = `REXX ModelLab 0.14 · CLI
+  node cli/modellab.js clothing personagem.modellab.json --out vestido.modellab.json [--id character] [--ops roupa.json] [--report roupa-report.json]
   node cli/modellab.js uv-audit projeto.modellab.json [--report uv.json]
   node cli/modellab.js texture projeto.modellab.json --out otimizado.modellab.json [--preset mobile|balanced|cinematic] [--ops textura.json] [--report textura-report.json]
   node cli/modellab.js material-maps textura.jpg --out mapas [--size 512]
@@ -88,11 +90,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
   let motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -140,6 +142,11 @@ async function run() {
   if (!out && !["validate","inspect","reference","uv-audit"].includes(command) && !dry) throw Error("Informe --out.");
   const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="clothing"){
+    const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
+    const result=trainClothing(p,id,options);
+    await atomic(out,serializeProject(result.project));if(report)await atomic(report,json(result.report));log(result.report);return;
+  }
   if(command==="retarget"){
     if(!rigFile)throw Error("Informe --rig.");
     if((await stat(input)).size>128*1024*1024)throw Error("FBX maior que 128 MiB.");

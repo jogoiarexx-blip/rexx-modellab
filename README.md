@@ -148,3 +148,7 @@ Vestuário procedural em relevo e acabamento: [documentação](docs/TRAIN-08-CLO
 ## REXX-TRAIN-10 — fluxo integrado
 
 Gere o pacote de personagem (malha, rig, movimentos e LODs) a partir de um perfil fotográfico com `node cli/modellab.js character original.modellab.json --out personagem-export`. Consulte [receitas e limitações](docs/CHARACTER-PIPELINE.md). O servidor MCP local oferece também a ferramenta `build_character`.
+
+## REXX-TRAIN-11 — Criaturas
+
+Biblioteca paramétrica de quadrúpedes e dragões: [documentação](docs/TRAIN-11-CREATURES.md).

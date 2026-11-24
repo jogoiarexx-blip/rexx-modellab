@@ -15,6 +15,7 @@ import { buildCharacterPackage, characterPackageEntries } from "../src/character
 import { exportLOD, LOD_PROFILES } from "../src/lod-training.js";
 import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
+import { createCreature } from "../src/creature-training.js";
 import { trainClothing } from "../src/clothing-training.js";
 import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
@@ -34,6 +35,7 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
   }
 };
 const help = `REXX ModelLab 0.14 · CLI
+  node cli/modellab.js creature receita.json --out criatura.modellab.json [--report criatura-report.json]
   node cli/modellab.js clothing personagem.modellab.json --out vestido.modellab.json [--id character] [--ops roupa.json] [--report roupa-report.json]
   node cli/modellab.js uv-audit projeto.modellab.json [--report uv.json]
   node cli/modellab.js texture projeto.modellab.json --out otimizado.modellab.json [--preset mobile|balanced|cinematic] [--ops textura.json] [--report textura-report.json]
@@ -97,11 +99,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing", "view-audit", "lod", "character"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing", "view-audit", "lod", "character", "creature"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
   let alignmentFile, motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { character:["--out","--ops","--motion"], lod:["--out","--rig","--animations","--motion","--ops"], "view-audit":["--id","--report"], clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset","--alignment"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { creature:["--out","--report"],character:["--out","--ops","--motion"], lod:["--out","--rig","--animations","--motion","--ops"], "view-audit":["--id","--report"], clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset","--alignment"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -150,6 +152,10 @@ async function run() {
   if (!out && !["validate","inspect","reference","uv-audit","view-audit"].includes(command) && !dry) throw Error("Informe --out.");
   const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile, alignmentFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="creature"){
+    const result=createCreature(JSON.parse((await read(input)).toString("utf8")));
+    await atomic(out,serializeProject(result.project));if(report)await atomic(report,json(result.report));log(result.report);return;
+  }
   if(command==="character"){
     const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
     let motion;

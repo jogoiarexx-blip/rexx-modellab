@@ -17,6 +17,7 @@ import {animationNames,exportAnimatedGLB,previewAnimation} from '../src/animatio
 import {auditUV,editTextures} from '../src/texture.js';
 import {buildCharacterPackage,characterPackageEntries} from '../src/character-pipeline.js';
 import {parseMotionFBX} from '../cli/fbx-motion.js';
+import {createCreature,creatureSpecies} from '../src/creature-training.js';
 import {trainClothing} from '../src/clothing-training.js';
 import {refineCharacter} from '../src/refine.js';
 
@@ -120,6 +121,12 @@ define('edit_project','Aplica operações ModelLab em cópia, por exemplo update
 define('inspect_project','Inspeciona dimensões, malhas, triângulos e referências.',{project},['project'],false,async(w,a)=>resultText(inspectProject(await parse(w,a.project))));
 define('render_project','Retorna PNGs reais e relatório da malha para inspeção visual. Ordem indicada no relatório.',renderProps,['project'],false,async(w,a)=>previews(renderViews(await parse(w,a.project),{size:a.size??384,views:a.views??['front','back','left','iso']})));
 define('refine_character','Converte perfil em mesh com volumes regionais ajustados.',{project,id:str('ID da peça'),factors:obj('head, torso, arms, legs, feet'),output},['project','output'],true,async(w,a)=>resultText(await save(w,a.output,refineCharacter(await parse(w,a.project),a.id??'character',a.factors??{}))));
+define('create_creature','Cria criatura paramétrica estática editável: '+creatureSpecies().join(', '),{options:obj('Receita: species, height, proportions, quality, color, accent, name'),reference:file('JPEG lateral opcional'),landmarks:obj('withers, rump, muzzle, groundY em pixels'),facing:str('Direção do focinho',{enum:['left','right']}),output},['output'],true,async(w,a)=>{
+ const opts={...a.options};
+ if(Object.hasOwn(opts,'reference'))throw Error('Use o campo reference externo para JPEG do workspace.');
+ if(a.reference)opts.reference={image:jpegURI(await w.read(a.reference)),landmarks:a.landmarks,facing:a.facing};
+ const r=createCreature(opts);return resultText({...await save(w,a.output,r.project),report:r.report});
+});
 define('train_clothing','Aplica relevo e acabamento procedural de roupas ao perfil humanoide original.',{project,id:str('ID da peça'),options:obj('Estilo suit, field, armor; strength, tint, tintStrength, features, refine'),output},['project','output'],true,async(w,a)=>{
  const r=trainClothing(await parse(w,a.project),a.id??'character',a.options??{});
  return resultText({...await save(w,a.output,r.project),report:r.report});

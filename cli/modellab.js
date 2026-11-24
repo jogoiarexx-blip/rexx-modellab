@@ -4,6 +4,8 @@ import { resolve, dirname, basename, extname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
+import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
+import { jpegURI } from "../src/raster.js";
 if (!globalThis.FileReader) globalThis.FileReader = class {
   readAsArrayBuffer(blob) {
     blob.arrayBuffer().then((value) => {
@@ -15,7 +17,11 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.6 · CLI
+const help = `REXX ModelLab 0.7 · CLI
+  node cli/modellab.js new --out projeto.modellab.json [--name Nome]
+  node cli/modellab.js photo foto.jpg --out personagem.modellab.json [--height 1.8] [--depth .25] [--contour pontos.json] [--name Nome]
+  node cli/modellab.js edit projeto.modellab.json --ops operacoes.json --out ajustado.modellab.json
+  node cli/modellab.js inspect projeto.modellab.json [--report relatorio.json]
   node cli/modellab.js init --template caixa|baliza|celula|placa --out projeto.modellab.json
   node cli/modellab.js build projeto.modellab.json --out modelo.glb [--report validacao.json] [--dry-run]
   node cli/modellab.js validate modelo.glb [--report validacao.json]
@@ -49,9 +55,9 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import"].includes(command)) throw Error("Comando desconhecido. Use --help.");
-  let input, out, report, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"] }[command];
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour"], edit:["--out","--ops"], inspect:["--report"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -68,12 +74,31 @@ async function run() {
     if (a === "--out") out = v;
     if (a === "--report") report = v;
     if (a === "--template") template = v;
+    if(a==="--name")name=v;
+    if(a==="--height")height=Number(v);
+    if(a==="--depth")depth=Number(v);
+    if(a==="--contour")contour=v;
+    if(a==="--ops")ops=v;
   }
-  if (command !== "init" && !input) throw Error("Informe o arquivo de entrada.");
-  if (command === "init" && input) throw Error("Use --out para indicar o projeto de saída.");
-  if (!out && command !== "validate" && !dry) throw Error("Informe --out.");
-  const paths = [input, out, report].filter(Boolean).map(resolvePath);
+  if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
+  if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
+  if (!out && !["validate","inspect"].includes(command) && !dry) throw Error("Informe --out.");
+  const paths = [input, out, report, ops, contour].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="new"||command==="photo"||command==="edit"){
+    let p;
+    if(command==="new")p=createProject(name);
+    if(command==="photo")p=photoProject({image:jpegURI(await read(input)),name,height,depth,points:contour?JSON.parse((await read(contour)).toString("utf8")):undefined});
+    if(command==="edit"){
+      if(!ops)throw Error("Informe --ops.");
+      p=applyOperations(JSON.parse((await read(input)).toString("utf8")),JSON.parse((await read(ops)).toString("utf8")));
+    }
+    await atomic(out,serializeProject(p));log({ok:true,project:out,parts:p.parts.length});return;
+  }
+  if(command==="inspect"){
+    const result=inspectProject(JSON.parse((await read(input)).toString("utf8")));
+    if(report)await atomic(report,json(result));log(result);return;
+  }
   if (command === "init") {
     if (!["caixa", "baliza", "celula", "placa"].includes(template)) throw Error("Template desconhecido.");
     const p = validate(JSON.parse(await readFile(new URL("../examples/" + template + ".modellab.json", import.meta.url), "utf8")));

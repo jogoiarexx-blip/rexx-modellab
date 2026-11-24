@@ -108,3 +108,7 @@ node scripts/standalone.mjs
 ~~~
 
 **src/** contém o editor, o viewport e o núcleo compartilhado. **vendor/** contém o motor compilado para uso offline. **scripts/examples.mjs** regenera as três receitas originais. **tests/** cobre reconstrução, reimportação, entradas inválidas, primitivas e CLI. As licenças do Three.js, do codec jpeg-js e dos ícones Lucide estão em **licenses/**.
+
+## Automação 0.7
+
+Crie personagens por JPEG, ajuste projetos com operações JSON e inspecione a malha pela CLI ou API JavaScript. Veja [documentação de automação](docs/AUTOMATION.md).

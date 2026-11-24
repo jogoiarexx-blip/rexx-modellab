@@ -52,9 +52,18 @@ export function blendPoses(a,b,t){
 }
 export function previewAnimation(project,rig,name,time,options){return previewPose(project,rig,samplePose(name,time),options);}
 export async function exportAnimatedGLB(project,rig,names=animationNames()){
+  return exportAnimationClips(project,rig,names.map(getClip));
+}
+export async function exportAnimationClips(project,rig,clips){
   validateRig(rig);
-  if(!Array.isArray(names)||!names.length||new Set(names).size!==names.length)throw Error('Lista de animações inválida.');
-  const clips=names.map(getClip),base=await exportSkinnedGLB(project,rig),{json:j,bin}=unpackGLB(base.buffer);
+  if(!Array.isArray(clips)||!clips.length||clips.length>32||new Set(clips.map(c=>c.name)).size!==clips.length)throw Error('Lista de animações inválida.');
+  const names=new Set(rig.bones.map(b=>b.name));
+  for(const c of clips){if(typeof c.name!=='string'||!c.name.trim()||c.name.length>120||typeof c.loop!=='boolean'||!Array.isArray(c.frames)||c.frames.length<2||c.frames.length>3601||c.frames[0].time!==0)throw Error('Clipe inválido.');
+    for(let i=0;i<c.frames.length;i++){const f=c.frames[i];if(!Number.isFinite(f.time)||f.time>60||(i&&f.time<=c.frames[i-1].time)||!f.pose||typeof f.pose!=='object')throw Error('Quadro inválido.');
+      for(const [k,v] of Object.entries(f.pose))if(!names.has(k)||!Array.isArray(v)||v.length!==3||!v.every(x=>Number.isFinite(x)&&Math.abs(x)<=360))throw Error('Rotação de clipe inválida: '+k);
+    }
+  }
+  const base=await exportSkinnedGLB(project,rig),{json:j,bin}=unpackGLB(base.buffer);
   const boneIds=new Map(rig.bones.map((b,i)=>[b.name,j.skins[0].joints[i]]));
   const chunks=[bin];let length=bin.length;
   function append(values,type){

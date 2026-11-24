@@ -5,9 +5,11 @@ import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
 import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
-import { animationNames, getClip, exportAnimatedGLB, previewAnimation } from "../src/animation.js";
+import { animationNames, getClip, exportAnimatedGLB, exportAnimationClips, previewAnimation } from "../src/animation.js";
 import { exportSkinnedGLB, verifySkinnedGLB, hasSkin, previewPose } from "../src/skin.js";
 import { autoRig, adjustRig, previewRig } from "../src/rig.js";
+import { parseMotionFBX } from "./fbx-motion.js";
+import { retargetMotion } from "../src/retarget.js";
 import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
 import { refineCharacter } from "../src/refine.js";
@@ -56,6 +58,8 @@ const help = `REXX ModelLab 0.13 · CLI
   node cli/modellab.js hands-mesh refinado.modellab.json --rig personagem.rig.json --out maos.modellab.json [--ops maos.json] [--report maos-report.json]
   node cli/modellab.js grip personagem.rig.json --out pose.json [--strength 0.8]
   node cli/modellab.js optimize projeto.modellab.json --out leve.modellab.json [--id character] [--preset mobile] [--rig personagem.rig.json] [--ops otimizacao.json] [--report mesh-report.json]
+  node cli/modellab.js retarget corrida.fbx --rig personagem.rig.json --out corrida.clip.json [--report retarget.json] [--fps 30] [--yaw 0]
+  build aceita --motion corrida.clip.json (com --rig e opcionalmente --animations).
   node cli/modellab.js --help
 
 Caminhos são relativos ao diretório atual. O projeto fonte é preservado.
@@ -84,11 +88,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
-  let optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  let motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -124,6 +128,9 @@ async function run() {
     if(a==="--hands")hands=v;
     if(a==="--strength")strength=Number(v);
     if(a==="--rig")rigFile=v;
+    if(a==="--motion")motionFile=v;
+    if(a==="--fps")fps=Number(v);
+    if(a==="--yaw")yaw=Number(v);
     if(a==="--animations")animationList=v==="all"?animationNames():v.split(",");
     if(a==="--clip")clip=v;
     if(a==="--time")time=Number(v);
@@ -131,8 +138,15 @@ async function run() {
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
   if (!out && !["validate","inspect","reference","uv-audit"].includes(command) && !dry) throw Error("Informe --out.");
-  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile].filter(Boolean).map(resolvePath);
+  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="retarget"){
+    if(!rigFile)throw Error("Informe --rig.");
+    if((await stat(input)).size>128*1024*1024)throw Error("FBX maior que 128 MiB.");
+    const motion=parseMotionFBX(await readFile(input));
+    const {report:details,...clip}=retargetMotion(motion,JSON.parse((await read(rigFile)).toString("utf8")),{fps,yaw,name});
+    await atomic(out,json(clip));const result={...details,sourceStats:motion.stats};if(report)await atomic(report,json(result));log(result);return;
+  }
   if(command==="optimize"){
     const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
     const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):undefined;
@@ -227,9 +241,9 @@ async function run() {
   if (command === "validate" && extname(input).toLowerCase() === ".glb") result = hasSkin(buffer)?await verifySkinnedGLB(buffer):await verifyGLB(buffer);
   else {
     const p = validate(JSON.parse(data.toString("utf8")));
-    if(animationList&&!rigFile)throw Error("Animações exigem --rig.");
+    if((animationList||motionFile)&&!rigFile)throw Error("Animações exigem --rig.");
     const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):null;
-    const built = animationList?await exportAnimatedGLB(p,rig,animationList):rig?await exportSkinnedGLB(p,rig):await exportGLB(p);
+    const built = motionFile?await exportAnimationClips(p,rig,[...(animationList??[]).map(getClip),JSON.parse((await read(motionFile)).toString("utf8"))]):animationList?await exportAnimatedGLB(p,rig,animationList):rig?await exportSkinnedGLB(p,rig):await exportGLB(p);
     result = built.report;
     if(preset&&command==="build")result.trainingBudget=inspectReferenceGLB(built.buffer,{preset}).budget;
     if (command === "build" && !dry) {

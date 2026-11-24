@@ -8,6 +8,7 @@ import { createProject, photoProject, applyOperations, inspectProject } from "..
 import { animationNames, getClip, exportAnimatedGLB, previewAnimation } from "../src/animation.js";
 import { exportSkinnedGLB, verifySkinnedGLB, hasSkin, previewPose } from "../src/skin.js";
 import { autoRig, adjustRig, previewRig } from "../src/rig.js";
+import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
 import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
@@ -54,6 +55,7 @@ const help = `REXX ModelLab 0.13 · CLI
   photo e build aceitam --preset mobile|balanced|cinematic.
   node cli/modellab.js hands-mesh refinado.modellab.json --rig personagem.rig.json --out maos.modellab.json [--ops maos.json] [--report maos-report.json]
   node cli/modellab.js grip personagem.rig.json --out pose.json [--strength 0.8]
+  node cli/modellab.js optimize projeto.modellab.json --out leve.modellab.json [--id character] [--preset mobile] [--rig personagem.rig.json] [--ops otimizacao.json] [--report mesh-report.json]
   node cli/modellab.js --help
 
 Caminhos são relativos ao diretório atual. O projeto fonte é preservado.
@@ -82,11 +84,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
-  let strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  let optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -118,7 +120,7 @@ async function run() {
     if(a==="--volume")volume=Number(v);
     if(a==="--detail"){detail=Number(v);explicitDetail=detail;}
     if(a==="--preset")preset=v;
-    if(a==="--id")id=v;
+    if(a==="--id"){id=v;optimizeId=v;}
     if(a==="--hands")hands=v;
     if(a==="--strength")strength=Number(v);
     if(a==="--rig")rigFile=v;
@@ -131,6 +133,12 @@ async function run() {
   if (!out && !["validate","inspect","reference","uv-audit"].includes(command) && !dry) throw Error("Informe --out.");
   const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="optimize"){
+    const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
+    const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):undefined;
+    const result=optimizeProject(p,{...options,...(optimizeId?{id:optimizeId}:{}),...(preset?{preset}:{}),...(rig?{rig}:{})});
+    await atomic(out,serializeProject(result.project));if(report)await atomic(report,json(result.report));log(result.report);return;
+  }
   if(command==="grip"){
     const pose=gripPose(JSON.parse((await read(input)).toString("utf8")),strength);
     await atomic(out,json(pose));log({ok:true,joints:Object.keys(pose).length,output:out});return;

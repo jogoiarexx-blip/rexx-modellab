@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
 import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
+import { autoRig, adjustRig, previewRig } from "../src/rig.js";
 import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
 import { encodePNG } from "./png.js";
@@ -20,7 +21,10 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.9 · CLI
+const help = `REXX ModelLab 0.10 · CLI
+  node cli/modellab.js rig personagem.modellab.json --id character --out personagem.rig.json [--ops joints.json]
+  node cli/modellab.js rig-edit personagem.rig.json --ops joints.json --out corrigido.rig.json
+  node cli/modellab.js rig-preview personagem.modellab.json --rig personagem.rig.json --out revisao [--size 512] [--views front,left,iso]
   node cli/modellab.js photo frente.jpg --back costas.jpg --side lateral.jpg --facing left --out personagem.modellab.json
   node cli/modellab.js refine personagem.modellab.json --id character --ops fatores.json --out refinado.modellab.json
   node cli/modellab.js render projeto.modellab.json --out pasta [--size 512] [--views front,back,left,right,iso]
@@ -61,10 +65,10 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine"].includes(command)) throw Error("Comando desconhecido. Use --help.");
-  let size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  let rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -96,11 +100,12 @@ async function run() {
     if(a==="--volume")volume=Number(v);
     if(a==="--detail")detail=Number(v);
     if(a==="--id")id=v;
+    if(a==="--rig")rigFile=v;
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
   if (!out && !["validate","inspect"].includes(command) && !dry) throw Error("Informe --out.");
-  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour].filter(Boolean).map(resolvePath);
+  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
   if(command==="new"||command==="photo"||command==="edit"){
     let p;
@@ -121,11 +126,19 @@ async function run() {
     const p=refineCharacter(JSON.parse((await read(input)).toString("utf8")),id,ops?JSON.parse((await read(ops)).toString("utf8")):{});
     await atomic(out,serializeProject(p));log({ok:true,project:out});return;
   }
-  if(command==="render"){
+  if(command==="rig"||command==="rig-edit"){
+    const source=JSON.parse((await read(input)).toString("utf8"));
+    if(command==="rig-edit"&&!ops)throw Error("Informe --ops.");
+    const joints=ops?JSON.parse((await read(ops)).toString("utf8")):{};
+    const rig=command==="rig"?autoRig(source,id,{joints}):adjustRig(source,joints);
+    await atomic(out,json(rig));log({ok:true,bones:rig.bones.length,output:out,warnings:rig.warnings});return;
+  }
+  if(command==="render"||command==="rig-preview"){
     const p=JSON.parse((await read(input)).toString("utf8"));
-    const result=renderViews(p,{size,views});
+    if(command==="rig-preview"&&!rigFile)throw Error("Informe --rig.");
+    const result=command==="rig-preview"?previewRig(p,JSON.parse((await read(rigFile)).toString("utf8")),{size,views}):renderViews(p,{size,views});
     const targets=[...Object.keys(result.images).map(v=>resolve(out,v+".png")),resolve(out,"report.json")];
-    if(targets.some(t=>resolvePath(t)===resolvePath(input)))throw Error("Saída coincide com entrada.");
+    if(targets.some(t=>[input,rigFile].filter(Boolean).some(s=>resolvePath(t)===resolvePath(s))))throw Error("Saída coincide com entrada.");
     for(const [v,image] of Object.entries(result.images))await atomic(resolve(out,v+".png"),encodePNG(image));
     await atomic(resolve(out,"report.json"),json(result.report));log(result.report);return;
   }

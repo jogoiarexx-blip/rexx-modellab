@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {photoProject} from '../src/automation.js';
+import {compress} from '../src/raster.js';
+import {autoRig,adjustRig,validateRig,previewRig} from '../src/rig.js';
+import {refineCharacter} from '../src/refine.js';
+const image=compress({width:100,height:100,data:new Uint8Array(40000).fill(255)});
+const points=[[43,5],[57,5],[57,20],[92,20],[92,30],[64,30],[64,90],[52,90],[50,56],[48,90],[36,90],[36,30],[8,30],[8,20],[43,20]];
+test('auto rig humanoide, hierarquia e ajustes não destrutivos',()=>{
+ const project=photoProject({image,points,height:1.8,depth:.25});
+ const rig=autoRig(project,'character');
+ assert.equal(rig.bones.length,26);validateRig(rig);
+ const left=rig.bones.find(b=>b.name==='leftHand'),right=rig.bones.find(b=>b.name==='rightHand');
+ assert.ok(left.position[0]>right.position[0]);
+ const next=adjustRig(rig,{leftHand:[left.position[0],left.position[1]-.01,left.position[2]]});
+ assert.notDeepEqual(next.bones,rig.bones);
+ assert.throws(()=>adjustRig(rig,{head:rig.bones.find(b=>b.name==='neck').position}));
+ const result=previewRig(project,next,{size:96,views:['front']});
+ assert.equal(result.report.rig.bones,26);
+ assert.ok(result.images.front.data.some((x,i,a)=>i%4===0&&x===255&&a[i+1]===191&&a[i+2]===55));
+ const mesh=refineCharacter(project,'character');
+ assert.equal(autoRig(mesh,'character').bones.length,26);
+});

@@ -120,3 +120,7 @@ Renderização CPU em cinco vistas PNG e auditoria de malha: [documentação](do
 ## Reconstrução multivista 0.9
 
 Fotografias frontal, traseira e lateral pela CLI, profundidade calibrada e refinamento regional: [documentação](docs/MULTIVIEW.md).
+
+## Auto Rig 0.10
+
+Esqueleto humanoide em pose T, ajuste de articulações e prévias PNG: [documentação](docs/RIG.md).

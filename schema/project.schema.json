@@ -134,8 +134,8 @@
           "maxItems": 3,
           "items": {
             "type": "number",
-            "minimum": -1000000.0,
-            "maximum": 1000000.0
+            "minimum": -1000000,
+            "maximum": 1000000
           }
         },
         "rotation": {
@@ -144,8 +144,8 @@
           "maxItems": 3,
           "items": {
             "type": "number",
-            "minimum": -1000000.0,
-            "maximum": 1000000.0
+            "minimum": -1000000,
+            "maximum": 1000000
           }
         },
         "scale": {
@@ -154,8 +154,8 @@
           "maxItems": 3,
           "items": {
             "type": "number",
-            "minimum": 1e-05,
-            "maximum": 10000.0
+            "minimum": 0.00001,
+            "maximum": 10000
           }
         },
         "size": {
@@ -164,8 +164,8 @@
           "maxItems": 3,
           "items": {
             "type": "number",
-            "minimum": 1e-05,
-            "maximum": 10000.0
+            "minimum": 0.00001,
+            "maximum": 10000
           }
         },
         "geometry": {
@@ -341,7 +341,7 @@
             },
             "meters": {
               "type": "number",
-              "minimum": 1e-05,
+              "minimum": 0.00001,
               "maximum": 10000
             }
           },
@@ -376,6 +376,20 @@
               "items": {
                 "$ref": "#/$defs/point"
               }
+            },
+            "alignment": {
+              "type": "array",
+              "maxItems": 12,
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "exclusiveMaximum": 1
+                }
+              }
             }
           },
           "required": [
@@ -403,6 +417,20 @@
                 "left",
                 "right"
               ]
+            },
+            "alignment": {
+              "type": "array",
+              "maxItems": 12,
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "exclusiveMaximum": 1
+                }
+              }
             }
           },
           "required": [

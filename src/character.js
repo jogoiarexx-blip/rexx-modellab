@@ -1,4 +1,5 @@
 import {BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2} from '../vendor/engine.mjs';
+import {viewMapper} from './view-alignment.js';
 import {bounds} from './profile.js';
 import {anatomy,spans} from './silhouette.js';
 import {photoRelief,projectSide} from './photo-detail.js';
@@ -118,8 +119,9 @@ export function sideDepth(points,height,volume=1){
 function sideEnvelope(side){
   if(!side)return null;
   const box=bounds(side.points),direction=side.facing==='left'?-1:1;
+  const map=viewMapper(side.alignment);
   const rows=Array.from({length:129},(_,i)=>{
-    const y=box.top+clamp(i/128,.0001,.9999)*box.height;
+    const y=box.top+clamp(map(i/128),.0001,.9999)*box.height;
     const intervals=spans(side.points,y);
     const middle=box.left+box.width*.5;
     if(!intervals.length)return [0,0];
@@ -193,13 +195,14 @@ export function characterGeometry(outline,size,side,ref,detail=0,faceBox){
   return geo;
 }
 const atlases=new Map();
-export function characterAtlas(ref,points,back,lateral){
-  const key=JSON.stringify([points,lateral?.side.points,lateral?.side.facing,lateral?.size,lateral?.detail]),cached=atlases.get(ref.image);
+export function characterAtlas(ref,points,back,lateral,{fresh=false}={}){
+  const key=JSON.stringify([points,lateral?.side.points,lateral?.side.facing,lateral?.side.alignment,lateral?.size,lateral?.detail]),cached=atlases.get(ref.image);
   const sideImage=lateral?.side.ref.image;
-  const rearKey=back?JSON.stringify(back.points):null;
-  if(cached?.key===key&&cached.rearKey===rearKey&&cached.rearImage===back?.ref.image&&cached.sideImage===sideImage)return cached;
+  const rearKey=back?JSON.stringify([back.points,back.alignment]):null;
+  if(!fresh&&cached?.key===key&&cached.rearKey===rearKey&&cached.rearImage===back?.ref.image&&cached.sideImage===sideImage)return cached;
   const source=pixels(ref.image),b=bounds(points);
   if(source.width!==ref.width||source.height!==ref.height)throw Error('A resolução da foto diverge da referência salva.');
+  const rearMap=viewMapper(back?.alignment);
   const rear=back?pixels(back.ref.image):null,rearBounds=back?bounds(back.points):null;
   if(rear&&(rear.width!==back.ref.width||rear.height!==back.ref.height))throw Error('A resolução da foto das costas diverge da referência salva.');
   const maxSide=896,projectedHeight=lateral?bounds(lateral.side.points).height:0,rearHeight=rearBounds?.height??0;
@@ -222,7 +225,7 @@ export function characterAtlas(ref,points,back,lateral){
   }
   for(let row=0;row<h;row++){
     const y=b.top+(row+.5)*b.height/h;
-    const rearY=rearBounds?rearBounds.top+(row+.5)*rearBounds.height/h:0;
+    const rearY=rearBounds?rearBounds.top+rearMap((row+.5)/h)*rearBounds.height:0;
     const rearSpans=rear?spans(back.points,rearY):[];
     const sections=spans(points,y).map(([a,end])=>{
       const span=end-a,inset=Math.min(span*.18,Math.max(1,1.3/ratio));
@@ -274,10 +277,11 @@ export function characterAtlas(ref,points,back,lateral){
   }
   if(lateral)projectSide(image,lateral.geometry,lateral.side,lateral.size[2],points,b);
   const entry={key,sideImage,rearKey,rearImage:back?.ref.image,image,encoded:null};
+  if(fresh)return entry;
   if(atlases.size>=3)atlases.delete(atlases.keys().next().value);
   atlases.set(ref.image,entry);return entry;
 }
-export function characterJPEG(ref,points,back,lateral){
-  const atlas=characterAtlas(ref,points,back,lateral);
+export function characterJPEG(ref,points,back,lateral,options){
+  const atlas=characterAtlas(ref,points,back,lateral,options);
   return atlas.encoded??=compress(atlas.image);
 }

@@ -149,7 +149,7 @@ export function buildScene(project,{textures=true}={}) {
         const back=n.profile.back;
         const side=n.profile.side;
         const lateral=side?{geometry:geometries.get(key),size:n.size,detail:n.profile.detail,side:{...side,ref:refs.get(side.reference)}}:undefined;
-        setImage(material,characterJPEG(ref,n.profile.points,back?{ref:refs.get(back.reference),points:back.points}:undefined,lateral));materials.set("photo/"+n.id,material);
+        setImage(material,characterJPEG(ref,n.profile.points,back?{ref:refs.get(back.reference),points:back.points,alignment:back.alignment}:undefined,lateral));materials.set("photo/"+n.id,material);
       }
       o = new T.Mesh(geometries.get(key), material);
       o.castShadow = o.receiveShadow = true;

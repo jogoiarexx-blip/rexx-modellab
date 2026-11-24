@@ -10,6 +10,7 @@ import { exportSkinnedGLB, verifySkinnedGLB, hasSkin, previewPose } from "../src
 import { autoRig, adjustRig, previewRig } from "../src/rig.js";
 import { parseMotionFBX } from "./fbx-motion.js";
 import { retargetMotion } from "../src/retarget.js";
+import { auditViews } from "../src/view-audit.js";
 import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
 import { trainClothing } from "../src/clothing-training.js";
@@ -62,6 +63,8 @@ const help = `REXX ModelLab 0.14 · CLI
   node cli/modellab.js optimize projeto.modellab.json --out leve.modellab.json [--id character] [--preset mobile] [--rig personagem.rig.json] [--ops otimizacao.json] [--report mesh-report.json]
   node cli/modellab.js retarget corrida.fbx --rig personagem.rig.json --out corrida.clip.json [--report retarget.json] [--fps 30] [--yaw 0]
   build aceita --motion corrida.clip.json (com --rig e opcionalmente --animations).
+  node cli/modellab.js view-audit personagem.modellab.json [--id character] [--report vistas.json]
+  photo aceita --alignment alinhamento.json.
   node cli/modellab.js --help
 
 Caminhos são relativos ao diretório atual. O projeto fonte é preservado.
@@ -90,11 +93,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing", "view-audit"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
-  let motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  let alignmentFile, motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { "view-audit":["--id","--report"], clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset","--alignment"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -130,6 +133,7 @@ async function run() {
     if(a==="--hands")hands=v;
     if(a==="--strength")strength=Number(v);
     if(a==="--rig")rigFile=v;
+    if(a==="--alignment")alignmentFile=v;
     if(a==="--motion")motionFile=v;
     if(a==="--fps")fps=Number(v);
     if(a==="--yaw")yaw=Number(v);
@@ -139,13 +143,16 @@ async function run() {
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
-  if (!out && !["validate","inspect","reference","uv-audit"].includes(command) && !dry) throw Error("Informe --out.");
-  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile].filter(Boolean).map(resolvePath);
+  if (!out && !["validate","inspect","reference","uv-audit","view-audit"].includes(command) && !dry) throw Error("Informe --out.");
+  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile, alignmentFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
   if(command==="clothing"){
     const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
     const result=trainClothing(p,id,options);
     await atomic(out,serializeProject(result.project));if(report)await atomic(report,json(result.report));log(result.report);return;
+  }
+  if(command==="view-audit"){
+    const result=auditViews(JSON.parse((await read(input)).toString("utf8")),id);if(report)await atomic(report,json(result));log(result);return;
   }
   if(command==="retarget"){
     if(!rigFile)throw Error("Informe --rig.");
@@ -195,9 +202,12 @@ async function run() {
     if(command==="photo"){
       if(preset)detail=photoTrainingOptions(preset,explicitDetail).detail;
       const view=async(path,pointsPath)=>path?{image:jpegURI(await read(path)),points:pointsPath?JSON.parse((await read(pointsPath)).toString("utf8")):undefined}:undefined;
-      const lateral=await view(side,sideContour);
-      if(lateral)lateral.facing=facing;
-      p=photoProject({image:jpegURI(await read(input)),name,height,depth,volume,detail,points:contour?JSON.parse((await read(contour)).toString("utf8")):undefined,back:await view(back,backContour),side:lateral});
+      const lateral=await view(side,sideContour),rear=await view(back,backContour);
+      const alignment=alignmentFile?JSON.parse((await read(alignmentFile)).toString("utf8")):{};
+      if(!alignment||typeof alignment!=="object"||Array.isArray(alignment)||Object.keys(alignment).some(k=>!["back","side"].includes(k))||(alignment.side!==undefined&&!lateral)||(alignment.back!==undefined&&!rear))throw Error("Alinhamento sem vista correspondente ou inválido.");
+      if(lateral){lateral.facing=facing;if(alignment.side!==undefined)lateral.alignment=alignment.side;}
+      if(rear&&alignment.back!==undefined)rear.alignment=alignment.back;
+      p=photoProject({image:jpegURI(await read(input)),name,height,depth,volume,detail,points:contour?JSON.parse((await read(contour)).toString("utf8")):undefined,back:rear,side:lateral});
     }
     if(command==="edit"){
       if(!ops)throw Error("Informe --ops.");

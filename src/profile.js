@@ -1,3 +1,4 @@
+import {validateAlignment} from './view-alignment.js';
 import {BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2} from '../vendor/engine.mjs';
 
 export const MAX_POINTS = 192;
@@ -63,6 +64,7 @@ export function validateProfile(node,ref,rearRef,sideRef){
   if(node.profile.back!=null){
     if(node.profile.form!=='humanoid'||!rearRef)throw Error('Selecione um personagem e uma referência válida para as costas.');
     validateContour(node.profile.back.points,rearRef);
+    validateAlignment(node.profile.back.alignment);
   }
   const detail=node.profile.detail;
   if(detail!=null&&(node.profile.form!=='humanoid'||!Number.isFinite(detail)||detail<0||detail>1))throw Error('O relevo deve ficar entre 0% e 100%.');
@@ -70,6 +72,7 @@ export function validateProfile(node,ref,rearRef,sideRef){
   if(side!=null){
     if(node.profile.form!=='humanoid'||!sideRef||!['left','right'].includes(side.facing))throw Error('Selecione uma referência lateral e a direção do rosto.');
     validateContour(side.points,sideRef);
+    validateAlignment(side.alignment);
   }
   const size=profileSize(node.profile,ref,node.size[0],node.size[2]);
   if(size.some((v,i)=>Math.abs(v-node.size[i])>Math.max(1e-9,v*1e-6))) throw Error('As dimensões do perfil divergem da escala do contorno em '+node.name+'.');

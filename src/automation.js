@@ -19,7 +19,7 @@ export function photoProject({image,points,name='Personagem',height=1.8,depth,vo
     if(input==null)continue;
     const raster=pixels(input.image),ref={id:key,name:key==='back'?'Costas':'Lateral',image:input.image,width:raster.width,height:raster.height};
     const pts=input.points??suggestContour(raster);validateContour(pts,ref);
-    views[key]={reference:key,points:structuredClone(pts)};
+    views[key]={reference:key,points:structuredClone(pts),...(input.alignment===undefined?{}:{alignment:structuredClone(input.alignment)})};
     if(key==='side'){
       if(!['left','right'].includes(input.facing))throw Error('Informe facing left ou right na vista lateral.');
       views.side.facing=input.facing;

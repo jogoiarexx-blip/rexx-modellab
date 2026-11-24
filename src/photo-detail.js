@@ -1,3 +1,4 @@
+import {viewMapper} from './view-alignment.js';
 import {bounds} from './profile.js';
 import {pixels,pixelOffset} from './raster.js';
 import {spans} from './silhouette.js';
@@ -42,8 +43,9 @@ export function projectSide(atlas,geometry,side,depth,outline,frontBox){
   if(photo.width!==side.ref.width||photo.height!==side.ref.height)throw Error('A resolução da foto de perfil diverge da referência salva.');
   const direction=side.facing==='left'?1:-1;
   const {width,height,data}=atlas,{position,normal,uv}=geometry.attributes,index=geometry.index.array;
+  const map=viewMapper(side.alignment);
   const rows=Array.from({length:height},(_,row)=>{
-    const y=box.top+(row+.5)*box.height/height;
+    const y=box.top+map((row+.5)/height)*box.height;
     return {y,intervals:spans(side.points,y)};
   });
   const vertices=Array.from({length:position.count},(_,i)=>[

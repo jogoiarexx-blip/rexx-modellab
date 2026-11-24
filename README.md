@@ -152,3 +152,7 @@ Gere o pacote de personagem (malha, rig, movimentos e LODs) a partir de um perfi
 ## REXX-TRAIN-11 — Criaturas
 
 Biblioteca paramétrica de quadrúpedes e dragões: [documentação](docs/TRAIN-11-CREATURES.md).
+
+## Estúdio web — TRAIN-11B
+
+Abra [Estúdio de produção](studio.html) no GitHub Pages para refinar perfis, gerar rig e exportar LODs, ou criar criaturas estáticas. Veja [guia e limites](docs/STUDIO-WEB.md).

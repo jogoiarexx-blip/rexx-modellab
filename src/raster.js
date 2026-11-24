@@ -1,5 +1,5 @@
-import decode from '../vendor/jpeg/decoder.cjs';
-import encode from '../vendor/jpeg/encoder.cjs';
+import decode from '../vendor/jpeg/decoder.mjs';
+import encode from '../vendor/jpeg/encoder.mjs';
 
 export const JPEG_PREFIX='data:image/jpeg;base64,';
 export function jpegBytes(uri){

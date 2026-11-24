@@ -1,4 +1,5 @@
 // Auto Rig 0.10: esqueleto de repouso em coordenadas locais da malha.
+import {addFingerBones} from './hand-rig.js';
 import {buildScene,validate} from './model.js';
 import {anatomy,spans} from './silhouette.js';
 import {bounds} from './profile.js';
@@ -9,7 +10,8 @@ const mid=s=>(s[0]+s[1])/2;
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const dist=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
 const sides=['left','right'];
-export function autoRig(project,id,{joints={}}={}){
+export function autoRig(project,id,{joints={},hands='basic'}={}){
+  if(!['basic','detailed'].includes(hands))throw Error('Modo de mãos inválido.');
   validate(project,{empty:false});
   const part=project.parts.find(p=>p.id===id);
   if(!part||!(part.profile?.form==='humanoid'||part.shape==='mesh'))throw Error('Selecione um perfil humanoide ou malha humana em pose T.');
@@ -75,7 +77,9 @@ export function autoRig(project,id,{joints={}}={}){
       add(s+'Toes',s+'Foot',legX(.965,s),.965,.18);
       add(s+'ToeEnd',s+'Toes',legX(.99,s),.99,.30);
     }
-    const rig={schemaVersion:'1.0',type:'modellab-humanoid-rig',partId:id,space:'mesh-local-meters',pose:'T',bones,warnings};
+    if(hands==='detailed')warnings.push('Dedos estimados em pose T, palma para baixo; revise as articulações e a geometria de cada dedo.');
+    const finalBones=hands==='detailed'?addFingerBones(bones):bones;
+    const rig={schemaVersion:'1.0',type:'modellab-humanoid-rig',partId:id,space:'mesh-local-meters',pose:'T',bones:finalBones,warnings};
     return adjustRig(rig,joints);
   }finally{scene.dispose();}
 }

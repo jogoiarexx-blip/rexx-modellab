@@ -1,4 +1,5 @@
 // Skinning linear de até quatro ossos por vértice; sem alterar UV ou topologia.
+import {fingerSegment,fingerGroup,handRegion} from './hand-rig.js';
 import * as T from '../vendor/engine.mjs';
 import {buildScene,validate,serializeProject,MAX_BYTES,imageMap} from './model.js';
 import {validateRig,adjustRig} from './rig.js';
@@ -10,8 +11,8 @@ const sideOf=n=>n.startsWith('left')?'left':n.startsWith('right')?'right':null;
 const limbOf=n=>/Shoulder|Arm|Hand/.test(n)?'arm':/Leg|Foot|Toes|ToeEnd/.test(n)?'leg':'core';
 const primary={hips:'spine',spine:'chest',chest:'neck',neck:'head',head:'headEnd'};
 for(const s of ['left','right'])for(const [a,b] of [['Shoulder','UpperArm'],['UpperArm','LowerArm'],['LowerArm','Hand'],['Hand','HandEnd'],['UpperLeg','LowerLeg'],['LowerLeg','Foot'],['Foot','Toes'],['Toes','ToeEnd']])primary[s+a]=s+b;
-function segmentDistance(p,a,b){
-  const delta=b.map((x,i)=>x-a[i]),q=p.map((x,i)=>x-a[i]),axis=[1,1,.35];
+function segmentDistance(p,a,b,full=false){
+  const delta=b.map((x,i)=>x-a[i]),q=p.map((x,i)=>x-a[i]),axis=full?[1,1,1]:[1,1,.35];
   const t=clamp(delta.reduce((s,v,i)=>s+v*q[i]*axis[i],0)/Math.max(1e-15,delta.reduce((s,v,i)=>s+v*v*axis[i],0)),0,1);
   return q.reduce((s,v,i)=>s+(v-t*delta[i])**2*axis[i],0);
 }
@@ -21,7 +22,7 @@ export function computeWeights(positions,rig){
   if(!positions.length||positions.length%3||positions.length>1800000||!positions.every(Number.isFinite))throw Error('Posições inválidas.');
   const map=new Map(rig.bones.map((b,i)=>[b.name,{...b,index:i}]));
   const segments=rig.bones.flatMap((b,i)=>{
-    const child=map.get(primary[b.name]);return child?[{a:b.position,b:child.position,index:i,name:b.name,side:sideOf(b.name),limb:limbOf(b.name)}]:[];
+    const child=map.get(primary[b.name]??fingerSegment(b.name));return child?[{a:b.position,b:child.position,index:i,name:b.name,side:sideOf(b.name),limb:limbOf(b.name),finger:fingerGroup(b.name)}]:[];
   });
   if(!segments.length)throw Error('Esqueleto humanoide sem segmentos reconhecidos.');
   const hips=map.get('hips'),head=map.get('headEnd'),lu=map.get('leftUpperArm'),ru=map.get('rightUpperArm');
@@ -29,22 +30,36 @@ export function computeWeights(positions,rig){
   const center=hips.position[0],shoulder=Math.min(Math.abs(lu.position[0]-center),Math.abs(ru.position[0]-center));
   const height=Math.max(.01,Math.abs(head.position[1]-hips.position[1])*2),epsilon=(height*.012)**2;
   const joints=new Uint16Array(positions.length/3*4),weights=new Float32Array(joints.length);
+  const detailed=segments.some(s=>s.finger);
   let mixed=0,maxInfluences=0;
   for(let i=0;i<positions.length;i+=3){
     const p=[positions[i],positions[i+1],positions[i+2]],x=p[0]-center,side=x>=0?'left':'right';
     const armFar=Math.abs(x)>shoulder+height*.075;
     const legFar=p[1]<hips.position[1]-height*.09;
+    const inHand=detailed&&handRegion(p,map.get(side+'Hand'),map.get(side+'HandEnd'));
     let candidates=segments.filter(s=>{
       if(s.side&&s.side!==side)return false;
+      if(s.finger&&!inHand)return false;
+      if(inHand)return s.name===side+'Hand'||!!s.finger;
       if(armFar)return s.limb==='arm';
       if(legFar)return s.limb==='leg';
       return true;
     });
     if(!candidates.length)candidates=segments;
-    const scored=candidates.map(s=>({...s,d:segmentDistance(p,s.a,s.b)})).sort((a,b)=>a.d-b.d||a.index-b.index);
+    let scored=candidates.map(s=>({...s,d:segmentDistance(p,s.a,s.b,inHand)})).sort((a,b)=>a.d-b.d||a.index-b.index);
+    if(inHand){
+      const closest=scored.find(s=>s.finger);
+      if(closest)scored=scored.filter(s=>!s.finger||s.finger===closest.finger);
+      const hand=map.get(side+'Hand'),end=map.get(side+'HandEnd');
+      const L=Math.hypot(...end.position.map((v,k)=>v-hand.position[k]));
+      // Beyond the palm, prioritize the local digit instead of the long hand segment.
+      const dir=end.position.map((v,k)=>v-hand.position[k]);
+      const progress=p.reduce((sum,v,k)=>sum+(v-hand.position[k])*dir[k],0)/(L*L);
+      if(progress>.60&&closest)scored=scored.filter(s=>s.finger);
+    }
     const near=scored[0].d;
-    const chosen=scored.filter(s=>s.d<=near+(height*.11)**2).slice(0,4);
-    const raw=chosen.map(s=>1/(s.d+epsilon)**2),sum=raw.reduce((a,b)=>a+b,0),offset=i/3*4;
+    const chosen=scored.filter(s=>s.d<=near+(height*(inHand?.025:.11))**2).slice(0,4);
+    const raw=chosen.map(s=>1/(s.d+(inHand?epsilon*.04:epsilon))**2),sum=raw.reduce((a,b)=>a+b,0),offset=i/3*4;
     for(let k=0;k<chosen.length;k++){joints[offset+k]=chosen[k].index;weights[offset+k]=raw[k]/sum;}
     if(chosen.length>1)mixed++;maxInfluences=Math.max(maxInfluences,chosen.length);
   }

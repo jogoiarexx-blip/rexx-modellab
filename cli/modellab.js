@@ -34,7 +34,7 @@ const help = `REXX ModelLab 0.13 · CLI
   node cli/modellab.js animation-preview personagem.modellab.json --rig personagem.rig.json --clip walk --time .25 --out revisao
   node cli/modellab.js build personagem.modellab.json --rig personagem.rig.json --out personagem.glb
   node cli/modellab.js pose-preview personagem.modellab.json --rig personagem.rig.json --ops pose.json --out revisao
-  node cli/modellab.js rig personagem.modellab.json --id character --out personagem.rig.json [--ops joints.json]
+  node cli/modellab.js rig personagem.modellab.json --id character --out personagem.rig.json [--ops joints.json] [--hands basic|detailed]
   node cli/modellab.js rig-edit personagem.rig.json --ops joints.json --out corrigido.rig.json
   node cli/modellab.js rig-preview personagem.modellab.json --rig personagem.rig.json --out revisao [--size 512] [--views front,left,iso]
   node cli/modellab.js photo frente.jpg --back costas.jpg --side lateral.jpg --facing left --out personagem.modellab.json
@@ -81,9 +81,9 @@ async function run() {
   }
   if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
-  let preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  let hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -116,6 +116,7 @@ async function run() {
     if(a==="--detail"){detail=Number(v);explicitDetail=detail;}
     if(a==="--preset")preset=v;
     if(a==="--id")id=v;
+    if(a==="--hands")hands=v;
     if(a==="--rig")rigFile=v;
     if(a==="--animations")animationList=v==="all"?animationNames():v.split(",");
     if(a==="--clip")clip=v;
@@ -170,7 +171,7 @@ async function run() {
     const source=JSON.parse((await read(input)).toString("utf8"));
     if(command==="rig-edit"&&!ops)throw Error("Informe --ops.");
     const joints=ops?JSON.parse((await read(ops)).toString("utf8")):{};
-    const rig=command==="rig"?autoRig(source,id,{joints}):adjustRig(source,joints);
+    const rig=command==="rig"?autoRig(source,id,{joints,hands}):adjustRig(source,joints);
     await atomic(out,json(rig));log({ok:true,bones:rig.bones.length,output:out,warnings:rig.warnings});return;
   }
   if(command==="render"||command==="rig-preview"||command==="pose-preview"||command==="animation-preview"){

@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
 import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
+import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
 import { encodePNG } from "./png.js";
 import { jpegURI } from "../src/raster.js";
@@ -19,7 +20,9 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.8 · CLI
+const help = `REXX ModelLab 0.9 · CLI
+  node cli/modellab.js photo frente.jpg --back costas.jpg --side lateral.jpg --facing left --out personagem.modellab.json
+  node cli/modellab.js refine personagem.modellab.json --id character --ops fatores.json --out refinado.modellab.json
   node cli/modellab.js render projeto.modellab.json --out pasta [--size 512] [--views front,back,left,right,iso]
   node cli/modellab.js new --out projeto.modellab.json [--name Nome]
   node cli/modellab.js photo foto.jpg --out personagem.modellab.json [--height 1.8] [--depth .25] [--contour pontos.json] [--name Nome]
@@ -58,10 +61,10 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render"].includes(command)) throw Error("Comando desconhecido. Use --help.");
-  let size=512, views;
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  let size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -85,21 +88,38 @@ async function run() {
     if(a==="--ops")ops=v;
     if(a==="--size")size=Number(v);
     if(a==="--views")views=v.split(",");
+    if(a==="--back")back=v;
+    if(a==="--side")side=v;
+    if(a==="--facing")facing=v;
+    if(a==="--back-contour")backContour=v;
+    if(a==="--side-contour")sideContour=v;
+    if(a==="--volume")volume=Number(v);
+    if(a==="--detail")detail=Number(v);
+    if(a==="--id")id=v;
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
   if (!out && !["validate","inspect"].includes(command) && !dry) throw Error("Informe --out.");
-  const paths = [input, out, report, ops, contour].filter(Boolean).map(resolvePath);
+  const paths = [input, out, report, ops, contour, back, side, backContour, sideContour].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
   if(command==="new"||command==="photo"||command==="edit"){
     let p;
     if(command==="new")p=createProject(name);
-    if(command==="photo")p=photoProject({image:jpegURI(await read(input)),name,height,depth,points:contour?JSON.parse((await read(contour)).toString("utf8")):undefined});
+    if(command==="photo"){
+      const view=async(path,pointsPath)=>path?{image:jpegURI(await read(path)),points:pointsPath?JSON.parse((await read(pointsPath)).toString("utf8")):undefined}:undefined;
+      const lateral=await view(side,sideContour);
+      if(lateral)lateral.facing=facing;
+      p=photoProject({image:jpegURI(await read(input)),name,height,depth,volume,detail,points:contour?JSON.parse((await read(contour)).toString("utf8")):undefined,back:await view(back,backContour),side:lateral});
+    }
     if(command==="edit"){
       if(!ops)throw Error("Informe --ops.");
       p=applyOperations(JSON.parse((await read(input)).toString("utf8")),JSON.parse((await read(ops)).toString("utf8")));
     }
     await atomic(out,serializeProject(p));log({ok:true,project:out,parts:p.parts.length});return;
+  }
+  if(command==="refine"){
+    const p=refineCharacter(JSON.parse((await read(input)).toString("utf8")),id,ops?JSON.parse((await read(ops)).toString("utf8")):{});
+    await atomic(out,serializeProject(p));log({ok:true,project:out});return;
   }
   if(command==="render"){
     const p=JSON.parse((await read(input)).toString("utf8"));

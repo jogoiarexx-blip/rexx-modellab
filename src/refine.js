@@ -1,0 +1,44 @@
+// Refinamento opcional de volume por região. Exporta uma cópia mesh editável.
+import {buildScene,validate,serializeProject} from './model.js';
+import {anatomy} from './silhouette.js';
+import {bounds} from './profile.js';
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+export function refineCharacter(source,id,options={}){
+  const project=structuredClone(validate(source)),part=project.parts.find(p=>p.id===id);
+  if(part?.profile?.form!=='humanoid'||part.shape!=='profile')throw Error('Escolha um perfil humanoide.');
+  const factors={head:1,torso:1,arms:1,legs:1,feet:1,...options};
+  for(const [k,v] of Object.entries(factors))if(!['head','torso','arms','legs','feet'].includes(k)||!Number.isFinite(v)||v<.65||v>1.4)throw Error('Fator regional inválido: '+k);
+  const scene=buildScene(project,{textures:false});
+  try{
+    const obj=scene.objects.get(id),g=obj.geometry,p=g.attributes.position,uv=g.attributes.uv;
+    const info=anatomy(part.profile.points),box=bounds(part.profile.points),chest=(info?.chestWidth??box.width*.31)/box.width;
+    const armTop=info?.armTop??.18,armBottom=info?.armBottom??.34;
+    const positions=[],texcoords=[];
+    // Pares frente/costas compartilham XY; o centro local de profundidade é preservado.
+    const half=p.count/2;
+    if(!Number.isInteger(half))throw Error('Topologia de personagem não reconhecida.');
+    for(let i=0;i<p.count;i++){
+      const x=p.getX(i),y=p.getY(i),z=p.getZ(i),other=(i+half)%p.count;
+      const mid=(z+p.getZ(other))*.5,row=.5-y/part.size[1],lateral=Math.abs(x/part.size[0]);
+      const head=1-smooth((row-armTop+.055)/.09),legs=smooth((row-.52)/.13),feet=smooth((row-.89)/.08);
+      const arms=smooth((lateral-chest*.40)/(chest*.35))*smooth((row-armTop+.045)/.045)*(1-smooth((row-armBottom)/.06));
+      let factor=factors.torso+(factors.head-factors.torso)*head;
+      factor+=(factors.legs-factor)*legs;
+      factor+=(factors.feet-factor)*feet;
+      factor+=(factors.arms-factor)*arms;
+      positions.push(x,y,mid+(z-mid)*factor);
+      texcoords.push(uv.getX(i),uv.getY(i));
+    }
+    let matId=id.slice(0,75)+'-refined';
+    for(let i=2;project.materials.some(m=>m.id===matId);i++)matId=id.slice(0,75)+'-refined-'+i;
+    const material=project.materials.find(m=>m.id===part.material);
+    project.materials.push({...material,id:matId,name:'Textura refinada',baseColorImage:obj.material.modelLabImage});
+    part.origin=part.profile.back?'two-view-humanoid':'single-view-humanoid';
+    part.sideCalibrated=!!part.profile.side;
+    delete part.profile;
+    part.shape='mesh';part.size=[1,1,1];part.material=matId;
+    part.geometry={positions,uv:texcoords,indices:Array.from(g.index.array)};
+    validate(project,{empty:false});serializeProject(project,false);return project;
+  }finally{scene.dispose();}
+}

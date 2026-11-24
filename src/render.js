@@ -1,5 +1,5 @@
 // Renderizador ortográfico CPU, sem navegador, WebGL ou dependências novas.
-import {Vector3,Matrix3} from '../vendor/engine.mjs';
+import {Vector3} from '../vendor/engine.mjs';
 import {buildScene,validate,metrics} from './model.js';
 export const VIEWS={front:[0,0],back:[Math.PI,0],left:[Math.PI/2,0],right:[-Math.PI/2,0],iso:[.65,.22]};
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -14,10 +14,10 @@ export function renderViews(project,{size=512,views=Object.keys(VIEWS)}={}){
       if(!o.isMesh)return;
       const g=o.geometry,p=g.attributes.position,n=g.attributes.normal,uv=g.attributes.uv,idx=g.index?.array;
       const coords=new Float64Array(p.count*3),normals=new Float32Array(p.count*3);
-      const mat=new Matrix3().getNormalMatrix(o.matrixWorld),v=new Vector3();
+      const inverse=o.matrixWorld.clone().invert().elements,v=new Vector3();
       for(let i=0;i<p.count;i++){
         v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld).toArray(coords,i*3);
-        if(n)v.fromBufferAttribute(n,i).applyNormalMatrix(mat).toArray(normals,i*3);
+        if(n){const x=n.getX(i),y=n.getY(i),z=n.getZ(i);v.set(inverse[0]*x+inverse[1]*y+inverse[2]*z,inverse[4]*x+inverse[5]*y+inverse[6]*z,inverse[8]*x+inverse[9]*y+inverse[10]*z).normalize().toArray(normals,i*3);}
       }
       const count=idx?.length??p.count,entry={id:o.userData.partId,vertices:p.count,triangles:count/3,degenerate:0,missingUV:!uv};
       for(let i=0;i<count;i+=3){

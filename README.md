@@ -116,3 +116,7 @@ Crie personagens por JPEG, ajuste projetos com operações JSON e inspecione a m
 ## Inspeção visual 0.8
 
 Renderização CPU em cinco vistas PNG e auditoria de malha: [documentação](docs/RENDER.md).
+
+## Reconstrução multivista 0.9
+
+Fotografias frontal, traseira e lateral pela CLI, profundidade calibrada e refinamento regional: [documentação](docs/MULTIVIEW.md).

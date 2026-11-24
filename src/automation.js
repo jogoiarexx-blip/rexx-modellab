@@ -3,22 +3,35 @@ import {defaults,makePart,validate,buildScene,metrics,below,serializeProject} fr
 import {bounds,profileSize,validateContour} from './profile.js';
 import {pixels} from './raster.js';
 import {suggestContour,anatomy} from './silhouette.js';
-import {suggestedDepth} from './character.js';
+import {suggestedDepth,sideDepth} from './character.js';
 
 export function createProject(name='Sem título'){
   return validate({...defaults(),name});
 }
-export function photoProject({image,points,name='Personagem',height=1.8,depth,volume=1,detail=.16}){
+export function photoProject({image,points,name='Personagem',height=1.8,depth,volume=1,detail=.16,back,side}){
   const raster=pixels(image),reference={id:'front',name:'Frente',image,width:raster.width,height:raster.height};
   const contour=points??suggestContour(raster);
   validateContour(contour,reference);
   if(!Number.isFinite(height)||height<=0||!Number.isFinite(volume)||volume<.5||volume>1.5)throw Error('Altura ou volume inválido.');
   const b=bounds(contour),width=height*b.width/b.height;
-  const d=depth??suggestedDepth(contour,width,volume);
+  const refs=[reference],views={};
+  for(const [key,input] of [['back',back],['side',side]]){
+    if(input==null)continue;
+    const raster=pixels(input.image),ref={id:key,name:key==='back'?'Costas':'Lateral',image:input.image,width:raster.width,height:raster.height};
+    const pts=input.points??suggestContour(raster);validateContour(pts,ref);
+    views[key]={reference:key,points:structuredClone(pts)};
+    if(key==='side'){
+      if(!['left','right'].includes(input.facing))throw Error('Informe facing left ou right na vista lateral.');
+      views.side.facing=input.facing;
+    }
+    refs.push(ref);
+  }
+  const d=depth??(views.side?sideDepth(views.side.points,height,volume):suggestedDepth(contour,width,volume));
   const project=createProject(name);
-  project.references=[reference];
+  project.references=refs;
   project.materials=[{id:'photo',name:'Textura fotográfica',color:'#ffffff',roughness:.85,metalness:0}];
-  project.parts=[{...makePart('character',name,'profile','photo'),position:[0,height/2,0],size:[width,height,d],profile:{reference:'front',points:structuredClone(contour),form:'humanoid',volume,detail,calibration:{a:[b.left,b.top],b:[b.left,b.top+b.height],meters:height}}}];
+  project.parts=[{...makePart('character',name,'profile','photo'),position:[0,height/2,0],size:[width,height,d],profile:{reference:'front',points:structuredClone(contour),form:'humanoid',volume,detail,...views,calibration:{a:[b.left,b.top],b:[b.left,b.top+b.height],meters:height}}}];
+  serializeProject(project,false);
   return validate(project,{empty:false});
 }
 function find(list,id){const item=list.find(x=>x.id===id);if(!item)throw Error('ID inexistente: '+id);return item;}
@@ -53,7 +66,8 @@ export function applyOperations(source,operations){
           n.profile.calibration={a:[b.left,b.top],b:[b.left,b.top+b.height],meters:height};
         }
         const dimensions=profileSize(n.profile,ref,n.size[0],n.size[2]);
-        const newDepth=op.depth??(n.profile.form==='humanoid'&&(op.fields?.volume!==undefined||op.fields?.points!==undefined||height!==undefined)?suggestedDepth(n.profile.points,dimensions[0],n.profile.volume??oldVolume):n.size[2]);
+        const recalc=op.fields?.volume!==undefined||op.fields?.points!==undefined||op.fields?.side!==undefined||height!==undefined;
+        const newDepth=op.depth??(n.profile.form==='humanoid'&&recalc?(n.profile.side?sideDepth(n.profile.side.points,dimensions[1],n.profile.volume??oldVolume):suggestedDepth(n.profile.points,dimensions[0],n.profile.volume??oldVolume)):n.size[2]);
         n.size=profileSize(n.profile,ref,dimensions[0],newDepth);
         if(op.keepFloor===true)n.position[1]+=(n.size[1]-oldHeight)*n.scale[1]/2;
         break;

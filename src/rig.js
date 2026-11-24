@@ -65,7 +65,9 @@ export function autoRig(project,id,{joints={},hands='basic'}={}){
     add('headEnd','head',center,.015);
     for(const s of sides){
       const sign=s==='left'?1:-1,edge=s==='left'?.985:.015;
-      const shoulder=center+sign*chest*.48,elbow=lerp(shoulder,edge,.45),wrist=lerp(shoulder,edge,.86);
+      const shoulder=center+sign*chest*.48,reach=Math.abs(edge-shoulder);
+      const handLength=hands==='detailed'?clamp(.092*h/w,reach*.16,reach*.27):reach*.14;
+      const wrist=edge-sign*handLength,elbow=hands==='detailed'?lerp(shoulder,wrist,.52):lerp(shoulder,edge,.45);
       add(s+'Shoulder','chest',center+sign*chest*.25,armRow);
       add(s+'UpperArm',s+'Shoulder',shoulder,armY(shoulder));
       add(s+'LowerArm',s+'UpperArm',elbow,armY(elbow));

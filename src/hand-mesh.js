@@ -68,7 +68,7 @@ export function buildHandMesh(source,rig,{segments=10,thickness=1}={}){
     if(t>=-.25&&t<=1.4&&radial<1.2)samples.push({q,uv:mesh.uv.slice(i*2,i*2+2)});
     // Keep the original closed body, compress the mitten into the palm.
     if(t>.38&&t<1.4&&radial<1.2){
-     const next=.38+.10*(1-Math.exp(-(t-.38)/.22));
+     const next=.38+.075*(1-Math.exp(-(t-.38)/.22));
      mesh.positions.splice(i*3,3,...add(q,mul(axis,(next-t)*L)));compressed++;
     }
    }
@@ -80,14 +80,14 @@ export function buildHandMesh(source,rig,{segments=10,thickness=1}={}){
    };
    // Closed palm overlaps the wrist and finger roots; independent components ease later retopology.
    const palm=tube(mesh,[-.08,.12,.36,.53].map(t=>add(wrist,mul(axis,t*L))),
-      [[.11,.17],[.16,.30],[.15,.41],[.10,.38]].map(([a,b])=>[a*L*thickness,b*L*thickness]),up,segments,uvAt);
+      [[.085,.13],[.12,.22],[.115,.30],[.075,.28]].map(([a,b])=>[a*L*thickness,b*L*thickness]),up,segments,uvAt);
    const digits=[];
    for(const {name,points} of f.digits){
     const measured=FINGER_REFERENCE[name].reduce((a,b)=>a+b,0)/(.042756*2);
     // Radius is a heuristic scaled by measured relative chain length, not a measured width.
-    const radius=L*.073*Math.sqrt(measured)*thickness;
+    const radius=L*.052*Math.sqrt(measured)*thickness;
     const c=[mix(points[0],points[1],-.16),points[0],mix(points[0],points[1],.52),points[1],mix(points[1],points[2],.52),points[2],mix(points[2],points[3],.58),points[3]];
-    const radii=[.80,1,.90,.87,.80,.74,.65,.34].map(s=>[radius*s*.84,radius*s]);
+    const radii=[.78,1,.88,.92,.76,.81,.64,.31].map(s=>[radius*s*.82,radius*s]);
     const out=tube(mesh,c,radii,up,segments,uvAt);
     digits.push({name,...out});
    }

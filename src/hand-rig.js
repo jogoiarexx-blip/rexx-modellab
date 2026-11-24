@@ -2,8 +2,8 @@
 // This is a procedural approximation for a T-pose with palm down, not a recovered skeleton.
 export const FINGERS=Object.freeze(['Thumb','Index','Middle','Ring','Pinky']);
 const proportions=Object.freeze({
- Thumb:[.20,.57,.34,.22],Index:[.44,1,.22,.17],Middle:[.43,1.07,0,0],
- Ring:[.45,.98,-.20,-.15],Pinky:[.49,.83,-.38,-.29]
+ Thumb:[.17,.60,.29,.46],Index:[.44,1,.18,.20],Middle:[.43,1.04,.03,.04],
+ Ring:[.45,.96,-.12,-.12],Pinky:[.49,.82,-.25,-.27]
 });
 const mix=(a,b,t)=>a+(b-a)*t;
 export function addFingerBones(bones){

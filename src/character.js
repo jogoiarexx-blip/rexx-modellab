@@ -1,4 +1,5 @@
 import {BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2} from '../vendor/engine.mjs';
+import {anatomicalSection,rearTone} from './human-volume.js';
 import {viewMapper} from './view-alignment.js';
 import {bounds} from './profile.js';
 import {anatomy,spans} from './silhouette.js';
@@ -139,7 +140,7 @@ export function characterGeometry(outline,size,side,ref,detail=0,faceBox){
   const localFace=faceBox?[b.left+faceBox[0]*b.width,b.top+faceBox[1]*b.height,b.left+faceBox[2]*b.width,b.top+faceBox[3]*b.height]:undefined;
   const {points,triangles,distances}=tessellate(outline,detail>0?56:40,localFace);
   const swapped=outline.map(([x,y])=>[y,x]),half=info.chestWidth*.5;
-  const lateral=sideEnvelope(side),roundness=[],centerDepth=[],noseProfile=[];
+  const lateral=sideEnvelope(side),roundness=[],centerDepth=[],noseProfile=[],sections=[];
   const relief=ref&&detail>0?photoRelief(ref,b):null;
   const thickness=points.map(([x,y],i)=>{
     const row=(y-b.top)/b.height,armZone=row>info.armTop-.055&&row<info.armBottom+.055;
@@ -152,6 +153,9 @@ export function characterGeometry(outline,size,side,ref,detail=0,faceBox){
     const peak=mix(radius*(head?.93:legs?.87:.67),armRadius*.91,limbWeight);
     const k=clamp(distances[i]/localRadius,0,1);
     const curve=distances[i]<1e-6?0:Math.sqrt(k*(2-k));
+    const span=spans(outline,y).find(([a,b])=>a<=x&&x<=b);
+    const legX=span?clamp((x-(span[0]+span[1])*.5)/Math.max(.001,(span[1]-span[0])*.5),-1,1):0;
+    sections[i]=anatomicalSection({row,x:(x-info.center)/Math.max(.001,half),arm:limbWeight,legX,curve});
     if(lateral){
       const [rear,front]=lateral(row);
       centerDepth[i]=(front+rear)*.5;
@@ -172,7 +176,8 @@ export function characterGeometry(outline,size,side,ref,detail=0,faceBox){
     const sign=front?1:-1;
     const radius=lateral?roundness[i]:thickness[i]/max*.5;
     const displacement=front&&relief&&radius>0?clamp(relief(x,y,distances[i])*detail*size[1]*.018,-radius*size[2]*.4,radius*size[2]*.65):0;
-    const z=(lateral?centerDepth[i]:0)+sign*radius+(front?(noseProfile[i]??0):0);
+    const s=sections[i],shaped=lateral?radius:radius*(1+s.flatness*(1-radius*2));
+    const z=lateral?centerDepth[i]+sign*radius+(front?(noseProfile[i]??0):0):shaped*(sign*(front?s.front:s.back)+s.center);
     positions.push((u-.5)*size[0],(.5-v)*size[1],z*size[2]+displacement);
     uv.push((front?u:1+u)*.5,v);
   });
@@ -270,7 +275,7 @@ export function characterAtlas(ref,points,back,lateral,{fresh=false}={}){
       for(let c=0;c<3;c++){
         out[f+c]=src[i+c];
         const base=mix(section.backL[c],section.backR[c],across);
-        out[r+c]=Math.round((sleeve?mix(base,sleeve[c],armWeight):base)*.94);
+        out[r+c]=Math.round(clamp((sleeve?mix(base,sleeve[c],armWeight):base)*.94*rearTone({row:(y-b.top)/b.height,across,armWeight,leg:clamp(((y-b.top)/b.height-.53)/.10,0,1),head:clamp((info.armTop-(y-b.top)/b.height)/.055,0,1)}),0,255));
       }
       out[f+3]=out[r+3]=255;
     }

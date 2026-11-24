@@ -1,5 +1,6 @@
 // Local-only browser worker: no network uploads, no Node-specific FBX parser.
 import {validate,serializeProject,MAX_BYTES} from './model.js';
+import {photoProject} from './automation.js';
 import {prepareCharacter} from './character-pipeline.js';
 import {createCreature} from './creature-training.js';
 import {renderViews} from './render.js';
@@ -10,10 +11,11 @@ let prepared=null;
 const render=(p,view)=>renderViews(p,{size:384,views:[view]}).images[view];
 self.onmessage=async({data:m})=>{
  try{
-  if(m.action==='prepare'){
-   const source=validate(m.source,{empty:false});
+  if(m.action==='prepare'||m.action==='photo'){
+   const source=m.action==='photo'?photoProject(m.photo):validate(m.source,{empty:false});
    if(new TextEncoder().encode(JSON.stringify(source)).length>MAX_BYTES)throw Error('Projeto acima de 24 MiB.');
    prepared=prepareCharacter(source,m.options);
+   if(m.action==='photo')self.postMessage({type:'source',source});
    const image=render(prepared.project,m.view);
    self.postMessage({type:'preview',image,report:prepared.report,bones:prepared.rig.bones.length,clips:prepared.clips.map(c=>c.name)});
   }else if(m.action==='creature'){

@@ -21,7 +21,7 @@ function config(options={}){
  if(Object.keys(retarget).some(k=>!['fps','name','loop','yaw'].includes(k)))throw Error('Opções retarget inválidas.');
  if(handMesh!==false&&Object.keys(handMesh).some(k=>!['segments','thickness'].includes(k)))throw Error('Opções de mãos inválidas.');
  if(clothing&&Object.hasOwn(clothing,'refine'))throw Error('Use refine no nível principal, não dentro de clothing.');
- return {id,refine:{anatomyStyle:'neutral',anatomyStrength:.6,face:{strength:.5},reproject:true,...refine},clothing,hands,handMesh,joints,animations,levels,maxBytes,retarget};
+ return {id,refine:{anatomyStyle:'neutral',anatomyStrength:.6,face:{strength:.75},reproject:true,...refine},clothing,hands,handMesh,joints,animations,levels,maxBytes,retarget};
 }
 export function prepareCharacter(source,options={},motion){
  const o=config(options);validate(source,{empty:false});
@@ -31,7 +31,7 @@ export function prepareCharacter(source,options={},motion){
  const views=auditViews(source,o.id),stages=[];
  const refined=o.clothing?trainClothing(source,o.id,{...o.clothing,refine:o.refine}):{project:refineCharacter(source,o.id,o.refine),report:null};
  let project=refined.project;
- stages.push({stage:'refine',ok:true,clothing:refined.report});
+ stages.push({stage:'refine',ok:true,clothing:refined.report,volumeModel:'anatomical-front-back-v2',rearInferred:!part.profile.back,sideInferred:!part.profile.side});
  // Use source silhouette for anatomical XY landmarks; refined positions preserve XY.
  const rig=autoRig(source,o.id,{hands:o.hands,joints:o.joints});
  stages.push({stage:'rig',ok:true,bones:rig.bones.length,warnings:rig.warnings});

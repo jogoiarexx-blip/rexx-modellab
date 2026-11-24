@@ -156,3 +156,7 @@ Biblioteca paramétrica de quadrúpedes e dragões: [documentação](docs/TRAIN-
 ## Estúdio web — TRAIN-11B
 
 Abra [Estúdio de produção](studio.html) no GitHub Pages para refinar perfis, gerar rig e exportar LODs, ou criar criaturas estáticas. Veja [guia e limites](docs/STUDIO-WEB.md).
+
+## Reconstrução humana V2
+
+[Prioridade de qualidade e estúdio fotográfico](docs/HUMAN-QUALITY.md).

@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { exportGLB, importGLB, verifyGLB } from "../src/format.js";
 import { validate, MAX_BYTES, serializeProject } from "../src/model.js";
 import { createProject, photoProject, applyOperations, inspectProject } from "../src/automation.js";
+import { renderViews } from "../src/render.js";
+import { encodePNG } from "./png.js";
 import { jpegURI } from "../src/raster.js";
 if (!globalThis.FileReader) globalThis.FileReader = class {
   readAsArrayBuffer(blob) {
@@ -17,7 +19,8 @@ if (!globalThis.FileReader) globalThis.FileReader = class {
     });
   }
 };
-const help = `REXX ModelLab 0.7 · CLI
+const help = `REXX ModelLab 0.8 · CLI
+  node cli/modellab.js render projeto.modellab.json --out pasta [--size 512] [--views front,back,left,right,iso]
   node cli/modellab.js new --out projeto.modellab.json [--name Nome]
   node cli/modellab.js photo foto.jpg --out personagem.modellab.json [--height 1.8] [--depth .25] [--contour pontos.json] [--name Nome]
   node cli/modellab.js edit projeto.modellab.json --ops operacoes.json --out ajustado.modellab.json
@@ -55,9 +58,10 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  let size=512, views;
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour"], edit:["--out","--ops"], inspect:["--report"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -79,6 +83,8 @@ async function run() {
     if(a==="--depth")depth=Number(v);
     if(a==="--contour")contour=v;
     if(a==="--ops")ops=v;
+    if(a==="--size")size=Number(v);
+    if(a==="--views")views=v.split(",");
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
@@ -94,6 +100,14 @@ async function run() {
       p=applyOperations(JSON.parse((await read(input)).toString("utf8")),JSON.parse((await read(ops)).toString("utf8")));
     }
     await atomic(out,serializeProject(p));log({ok:true,project:out,parts:p.parts.length});return;
+  }
+  if(command==="render"){
+    const p=JSON.parse((await read(input)).toString("utf8"));
+    const result=renderViews(p,{size,views});
+    const targets=[...Object.keys(result.images).map(v=>resolve(out,v+".png")),resolve(out,"report.json")];
+    if(targets.some(t=>resolvePath(t)===resolvePath(input)))throw Error("Saída coincide com entrada.");
+    for(const [v,image] of Object.entries(result.images))await atomic(resolve(out,v+".png"),encodePNG(image));
+    await atomic(resolve(out,"report.json"),json(result.report));log(result.report);return;
   }
   if(command==="inspect"){
     const result=inspectProject(JSON.parse((await read(input)).toString("utf8")));

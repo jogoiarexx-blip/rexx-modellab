@@ -112,3 +112,7 @@ node scripts/standalone.mjs
 ## Automação 0.7
 
 Crie personagens por JPEG, ajuste projetos com operações JSON e inspecione a malha pela CLI ou API JavaScript. Veja [documentação de automação](docs/AUTOMATION.md).
+
+## Inspeção visual 0.8
+
+Renderização CPU em cinco vistas PNG e auditoria de malha: [documentação](docs/RENDER.md).

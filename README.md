@@ -124,3 +124,7 @@ Fotografias frontal, traseira e lateral pela CLI, profundidade calibrada e refin
 ## Auto Rig 0.10
 
 Esqueleto humanoide em pose T, ajuste de articulações e prévias PNG: [documentação](docs/RIG.md).
+
+## Skinning 0.11
+
+GLB com esqueleto integrado, pesos automáticos e prévia de poses: [documentação](docs/SKINNING.md).

@@ -20,7 +20,7 @@ export function pixels(uri){
   if(decoded.size>=3)decoded.delete(decoded.keys().next().value);
   decoded.set(uri,image);return image;
 }
-export const compress=image=>jpegURI(encode(image,94).data);
+export const compress=(image,quality=94)=>jpegURI(encode(image,quality).data);
 export function pixelOffset(image,x,y){
   return 4*(Math.min(image.height-1,Math.max(0,Math.round(y)))*image.width+Math.min(image.width-1,Math.max(0,Math.round(x))));
 }

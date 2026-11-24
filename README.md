@@ -132,3 +132,7 @@ GLB com esqueleto integrado, pesos automáticos e prévia de poses: [documentaç
 ## Animações 0.12
 
 Nove clips procedurais, prévias e exportação GLB animado: [documentação](docs/ANIMATIONS.md).
+
+## Texturas e UV 0.13
+
+Auditoria UV, ajustes, otimização JPEG, atlas e mapas auxiliares: [documentação](docs/TEXTURES.md).

@@ -11,6 +11,7 @@ import { autoRig, adjustRig, previewRig } from "../src/rig.js";
 import { refineCharacter } from "../src/refine.js";
 import { renderViews } from "../src/render.js";
 import { encodePNG } from "./png.js";
+import { inspectReferenceGLB, photoTrainingOptions } from "../src/reference-training.js";
 import { jpegURI } from "../src/raster.js";
 if (!globalThis.FileReader) globalThis.FileReader = class {
   readAsArrayBuffer(blob) {
@@ -44,6 +45,8 @@ const help = `REXX ModelLab 0.12 · CLI
   node cli/modellab.js validate modelo.glb [--report validacao.json]
   node cli/modellab.js validate projeto.modellab.json [--report validacao.json]
   node cli/modellab.js import modelo.glb --out projeto.modellab.json
+  node cli/modellab.js reference modelo.glb [--preset mobile|balanced|cinematic] [--report referencia.json]
+  photo e build aceitam --preset mobile|balanced|cinematic.
   node cli/modellab.js --help
 
 Caminhos são relativos ao diretório atual. O projeto fonte é preservado.
@@ -72,11 +75,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
-  let animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
+  let preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset"], reference:["--preset","--report"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -106,7 +109,8 @@ async function run() {
     if(a==="--back-contour")backContour=v;
     if(a==="--side-contour")sideContour=v;
     if(a==="--volume")volume=Number(v);
-    if(a==="--detail")detail=Number(v);
+    if(a==="--detail"){detail=Number(v);explicitDetail=detail;}
+    if(a==="--preset")preset=v;
     if(a==="--id")id=v;
     if(a==="--rig")rigFile=v;
     if(a==="--animations")animationList=v==="all"?animationNames():v.split(",");
@@ -115,13 +119,19 @@ async function run() {
   }
   if (!["init","new"].includes(command) && !input) throw Error("Informe o arquivo de entrada.");
   if (["init","new"].includes(command) && input) throw Error("Use --out para indicar o projeto de saída.");
-  if (!out && !["validate","inspect"].includes(command) && !dry) throw Error("Informe --out.");
+  if (!out && !["validate","inspect","reference"].includes(command) && !dry) throw Error("Informe --out.");
   const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="reference"){
+    if((await stat(input)).size>128*1024*1024)throw Error("Referência maior que 128 MiB.");
+    const result=inspectReferenceGLB(await readFile(input),{preset});
+    if(report)await atomic(report,json(result));log(result);return;
+  }
   if(command==="new"||command==="photo"||command==="edit"){
     let p;
     if(command==="new")p=createProject(name);
     if(command==="photo"){
+      if(preset)detail=photoTrainingOptions(preset,explicitDetail).detail;
       const view=async(path,pointsPath)=>path?{image:jpegURI(await read(path)),points:pointsPath?JSON.parse((await read(pointsPath)).toString("utf8")):undefined}:undefined;
       const lateral=await view(side,sideContour);
       if(lateral)lateral.facing=facing;
@@ -180,6 +190,7 @@ async function run() {
     const rig=rigFile?JSON.parse((await read(rigFile)).toString("utf8")):null;
     const built = animationList?await exportAnimatedGLB(p,rig,animationList):rig?await exportSkinnedGLB(p,rig):await exportGLB(p);
     result = built.report;
+    if(preset&&command==="build")result.trainingBudget=inspectReferenceGLB(built.buffer,{preset}).budget;
     if (command === "build" && !dry) {
       await atomic(out, new Uint8Array(built.buffer));
       result.output = out;

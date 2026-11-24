@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171a19"><title>REXX ModelLab · Editor 3D</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='7' fill='%23d3ed76'/%3E%3Cpath fill='%23171a19' d='m8 28 9-17h6l-9 17h-6zm10 0 5-9 8 9z'/%3E%3C/svg%3E"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/editor.js"></script></head>
+<body>
+<header class="top"><div class="brand"><b class="logo" aria-hidden="true"></b><strong>REXX</strong><span>ModelLab</span></div><span class="ver">v0.6</span><div class="head-divider"></div><span class="worktitle">Editor de modelos</span><div class="push"></div>
+<div class="history"><button class="icon" id="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer"><i data-ic="Undo2"></i></button><button class="icon" id="redo" title="Refazer (Ctrl+Y)" aria-label="Refazer"><i data-ic="Redo2"></i></button></div><button id="fileMenu" class="plain"><i data-ic="FolderOpen"></i><span>Arquivo</span><i data-ic="ChevronDown" data-size="12"></i></button>
+<button id="photoOpen" class="subtle" title="Criar peça a partir de foto" aria-label="Foto para 3D"><i data-ic="ScanLine"></i><span>Foto para 3D</span></button><button id="save" class="subtle"><i data-ic="Save"></i><span>Salvar projeto</span></button><button id="export" class="primary"><i data-ic="Download"></i><span>Exportar GLB</span></button></header>
+<main class="desk">
+<aside class="left panel" id="leftPanel"><div class="panel-tabs"><button class="tab active" data-tab="scene"><i data-ic="Layers3"></i>Cena</button><button class="tab" data-tab="library"><i data-ic="Library"></i>Biblioteca</button><button class="mobile-close icon" data-closepanel="left" aria-label="Fechar cena"><i data-ic="X"></i></button></div>
+<div id="sceneTab" class="left-content"><div class="sectionhead"><h2>Hierarquia</h2><button class="icon small" id="add" title="Adicionar peça" aria-label="Adicionar peça"><i data-ic="Plus"></i></button></div>
+<div id="sceneRoot"></div><div class="tree" id="tree" role="tree" aria-label="Peças da cena"></div>
+<div class="quick"><div class="sectionhead"><h2>Formas rápidas</h2></div><div class="shapes" id="quickShapes"></div></div></div>
+<div id="libraryTab" class="left-content" hidden><div class="sectionhead"><h2>Modelos iniciais</h2></div><div id="templateList"></div><div class="sectionhead"><h2>Primitivas</h2></div><div class="shapes full" id="libraryShapes"></div></div></aside>
+<section class="stage"><div class="stagebar"><button class="icon mobile-opener" id="openLeft" aria-label="Abrir painel da cena"><i data-ic="PanelLeft"></i></button><span class="live"></span><strong>Viewport 3D</strong><div class="push"></div><label class="viewselect"><i data-ic="Box" data-size="14"></i><select id="view" title="Vista da câmera" aria-label="Vista da câmera"><option value="iso">Perspectiva</option><option value="front">Frente</option><option value="side">Lado direito</option><option value="back">Costas</option><option value="top">Topo</option></select></label><span class="vrule"></span><button class="icon" id="frame" title="Enquadrar cena (Home)" aria-label="Enquadrar cena"><i data-ic="Maximize"></i></button><button class="icon mobile-opener" id="openRight" aria-label="Abrir inspetor"><i data-ic="PanelRight"></i></button></div>
+<div class="viewport" id="viewport"><canvas id="canvas" aria-label="Cena 3D interativa"></canvas>
+<div class="stage-caption"><div class="capline"><span class="tick"></span><span>PROJETO ATIVO</span></div><h1 id="projectTitle"></h1></div>
+<div id="axes" aria-hidden="true"><span id="axisX">X</span><span id="axisY">Y</span><span id="axisZ">Z</span></div>
+<div class="toolbar" aria-label="Ferramentas de modelagem" id="tools"></div><div id="gpuFail" hidden></div></div>
+<div class="stagefoot"><span class="hint"><i data-ic="Orbit" data-size="14"></i> Arraste para orbitar</span><span class="hint"><i data-ic="MousePointer2" data-size="13"></i> Roda para zoom</span><span class="push"></span><button class="plain small" id="help" title="Atalhos"><i data-ic="Keyboard" data-size="16"></i> Atalhos</button></div></section>
+<aside class="right panel" id="rightPanel"><div class="rhead"><i data-ic="SlidersHorizontal"></i><strong>Inspetor</strong><div class="push"></div><button class="mobile-close icon" data-closepanel="right" aria-label="Fechar inspetor"><i data-ic="X"></i></button></div><div id="inspector"></div></aside>
+</main><footer class="status"><span class="ready"></span><span id="saved">Projeto de exemplo</span><span class="footdiv"></span><span id="stats"></span><span class="push"></span><span class="units">Unidade <b>m</b></span><button id="validate" class="plain small"><i data-ic="ClipboardCheck" data-size="14"></i> Validar modelo</button></footer>
+<div id="menu" class="menu" hidden></div><div id="toast" role="status" hidden></div><dialog id="dialog"><div id="modalContent"></div></dialog>
+<dialog id="photoDialog" aria-labelledby="photoTitle">
+  <header class="photo-head"><div><div class="photo-overline">MODELAGEM POR REFERÊNCIA</div><h2 id="photoTitle">Foto para 3D</h2></div><button type="button" class="icon" id="photoClose" aria-label="Fechar editor de contorno"><i data-ic="X"></i></button></header>
+  <div class="photo-body">
+    <section class="trace-column">
+      <div class="photo-section-head"><strong>Imagem de referência</strong><button type="button" class="subtle small" id="photoBrowse">Carregar imagem</button></div>
+      <div id="rearControls" class="photo-references" hidden>
+        <button type="button" id="frontTrace" class="subtle small" aria-pressed="true">Frente</button>
+        <button type="button" id="rearTrace" class="subtle small" aria-pressed="false">Costas</button>
+        <button type="button" id="sideTrace" class="subtle small" aria-pressed="false">Perfil</button>
+        <button type="button" id="rearBrowse" class="subtle small">Adicionar foto das costas</button>
+        <button type="button" id="rearRemove" class="plain small" hidden>Remover foto das costas</button>
+        <button type="button" id="sideBrowse" class="subtle small">Adicionar foto de perfil</button>
+        <button type="button" id="sideRemove" class="plain small" hidden>Remover foto de perfil</button>
+      </div>
+      <div id="sideSettings" hidden><label>Na foto de perfil, o rosto aponta para <select id="sideFacing" class="drop"><option value="right">a direita</option><option value="left">a esquerda</option></select></label></div>
+      <input id="sideFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+      <input id="rearFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+      <input id="photoFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+      <svg id="traceSurface" aria-label="Área de marcação do contorno" role="img" preserveAspectRatio="xMidYMid meet">
+        <image id="traceImage"/><g id="traceLines" pointer-events="none"></g>
+      </svg>
+      <div class="trace-tools"><span id="pointCount"></span><button type="button" class="subtle small" id="autoTrace">Sugerir contorno</button><button type="button" class="plain small" id="pointUndo">Desfazer marcação</button><button type="button" class="plain small" id="pointDelete">Excluir ponto</button><button type="button" class="plain small" id="pointClear">Limpar</button></div>
+      <p class="photo-hint" id="traceHint"></p>
+      <div class="photo-source" id="photoSource"></div>
+    </section>
+    <section class="trace-settings">
+      <label>Nome da peça<input id="profileName" class="textin" maxlength="120"></label>
+      <label>Tipo de modelo<select class="drop" id="profileForm"><option value="auto">Detectar pelo contorno</option><option value="humanoid">Personagem em pose de T</option><option value="rigid">Objeto de espessura uniforme</option></select></label>
+      <p id="formHint" class="photo-hint" aria-live="polite"></p>
+      <label id="volumeRow" hidden>Volume do personagem<select id="profileVolume" class="drop"><option value=".75">Mais fino</option><option value="1">Proporcional ao tronco</option><option value="1.25">Mais espesso</option></select></label>
+      <label id="detailRow" hidden>Relevo da foto <output id="detailValue" for="profileDetail"></output><input id="profileDetail" type="range" min="0" max="1" step=".05" value=".45"></label>
+      <label>Escala<select id="scaleMode" class="drop"><option value="width">Pela largura do objeto</option><option value="measure">Por uma medida na imagem</option></select></label>
+      <div id="calibrationRow" hidden><label>Distância conhecida (m)<input id="knownMeters" type="number" step="any" min="0.00001" class="textin"></label><button type="button" id="calibrate" class="subtle small">Marcar dois pontos</button></div>
+      <div class="photo-numbers"><label>Largura (m)<input id="profileWidth" type="number" class="textin" min=".00001" step="any"></label><label>Profundidade (m)<input id="profileDepth" class="textin" type="number" min=".00001" step="any"></label></div>
+      <div class="preview-header"><strong>Prévia do sólido</strong><select id="profileView" aria-label="Vista da prévia" class="drop"><option value="iso">Perspectiva</option><option value="front">Frente</option><option value="side">Lado</option><option value="back">Costas</option></select></div>
+      <svg id="profilePreview" viewBox="0 0 290 128" aria-label="Prévia do volume gerado" role="img"></svg>
+      <canvas id="humanPreview" width="460" height="300" role="img" aria-label="Prévia do personagem com a foto aplicada" hidden></canvas>
+      <div class="photo-readout" id="profileDims"></div><button type="button" class="subtle small" id="profileSheet">Salvar três vistas em PNG</button>
+      <label id="targetLabel">Destino<select id="profileTarget" class="drop"><option value="new">Criar projeto com esta peça</option><option value="add">Adicionar à cena atual</option></select></label>
+    </section>
+  </div>
+  <div class="photo-bottom"><p id="profileMessage" role="status"></p><button type="button" class="primary" id="applyProfile">Criar peça 3D</button></div>
+</dialog>
+
+<input type="file" id="openFile" accept=".json,.glb" hidden><noscript>Ative o JavaScript no navegador para usar o REXX ModelLab.</noscript>
+</body></html>

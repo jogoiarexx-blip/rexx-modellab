@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "format": "glTF 2.0 / GLB",
+  "profile": "rigid-pbr",
+  "reimported": true,
+  "meshes": 97,
+  "triangles": 3462,
+  "dimensions": [
+    1.948,
+    0.938,
+    1.1325
+  ],
+  "bytes": 150640,
+  "output": "examples/caixa.glb"
+}

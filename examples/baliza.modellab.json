@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Baliza de sinalização",
+  "units": "meters",
+  "materials": [
+    {
+      "id": "armor",
+      "name": "Grafite moldado",
+      "color": "#343d39",
+      "metalness": 0.27,
+      "roughness": 0.57
+    },
+    {
+      "id": "rubber",
+      "name": "Borracha",
+      "color": "#1e2322",
+      "metalness": 0.02,
+      "roughness": 0.78
+    },
+    {
+      "id": "ink",
+      "name": "Marfim",
+      "color": "#dedfbd",
+      "metalness": 0.13,
+      "roughness": 0.66
+    },
+    {
+      "id": "signal",
+      "name": "Amarelo sinal",
+      "color": "#ded956",
+      "metalness": 0.22,
+      "roughness": 0.45
+    },
+    {
+      "id": "orange",
+      "name": "Laranja de segurança",
+      "color": "#e77f42",
+      "metalness": 0.21,
+      "roughness": 0.46
+    }
+  ],
+  "parts": [
+    {
+      "id": "base",
+      "name": "Plataforma",
+      "shape": "case",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.055,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.5,
+        0.11,
+        0.5
+      ]
+    },
+    {
+      "id": "torre",
+      "name": "Coluna",
+      "shape": "cylinder",
+      "material": "orange",
+      "parent": null,
+      "position": [
+        0,
+        0.46,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.15,
+        0.76,
+        0.15
+      ]
+    },
+    {
+      "id": "p-1",
+      "name": "Colar inferior",
+      "shape": "cylinder",
+      "material": "rubber",
+      "parent": "base",
+      "position": [
+        0,
+        0.09,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.235,
+        0.12,
+        0.235
+      ]
+    },
+    {
+      "id": "p-2",
+      "name": "Faixa refletiva",
+      "shape": "cylinder",
+      "material": "ink",
+      "parent": "torre",
+      "position": [
+        0,
+        0.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.156,
+        0.12,
+        0.156
+      ]
+    },
+    {
+      "id": "p-3",
+      "name": "Faixa refletiva superior",
+      "shape": "cylinder",
+      "material": "ink",
+      "parent": "torre",
+      "position": [
+        0,
+        0.275,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.156,
+        0.1,
+        0.156
+      ]
+    },
+    {
+      "id": "cabeca",
+      "name": "Sinalizador",
+      "shape": "sphere",
+      "material": "signal",
+      "parent": null,
+      "position": [
+        0,
+        0.94,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.23,
+        0.26
+      ]
+    },
+    {
+      "id": "p-4",
+      "name": "Anel do sinalizador",
+      "shape": "cylinder",
+      "material": "armor",
+      "parent": "cabeca",
+      "position": [
+        0,
+        -0.09,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.064,
+        0.26
+      ]
+    }
+  ]
+}

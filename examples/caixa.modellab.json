@@ -1,0 +1,3423 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Caixa de suprimentos",
+  "units": "meters",
+  "materials": [
+    {
+      "id": "olive",
+      "name": "Oliva industrial",
+      "color": "#849258",
+      "metalness": 0.29,
+      "roughness": 0.49
+    },
+    {
+      "id": "armor",
+      "name": "Grafite moldado",
+      "color": "#343d39",
+      "metalness": 0.27,
+      "roughness": 0.57
+    },
+    {
+      "id": "rubber",
+      "name": "Borracha",
+      "color": "#1e2322",
+      "metalness": 0.02,
+      "roughness": 0.78
+    },
+    {
+      "id": "steel",
+      "name": "Aço escovado",
+      "color": "#b5b9ac",
+      "metalness": 0.78,
+      "roughness": 0.33
+    },
+    {
+      "id": "ink",
+      "name": "Marfim",
+      "color": "#dedfbd",
+      "metalness": 0.13,
+      "roughness": 0.66
+    },
+    {
+      "id": "signal",
+      "name": "Amarelo sinal",
+      "color": "#ded956",
+      "metalness": 0.22,
+      "roughness": 0.45
+    },
+    {
+      "id": "inset",
+      "name": "Oliva escuro",
+      "color": "#566344",
+      "metalness": 0.27,
+      "roughness": 0.54
+    }
+  ],
+  "parts": [
+    {
+      "id": "corpo",
+      "name": "Carcaça principal",
+      "shape": "case",
+      "material": "olive",
+      "parent": null,
+      "position": [
+        0,
+        0.405,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.69,
+        0.62,
+        0.96
+      ]
+    },
+    {
+      "id": "tampa",
+      "name": "Tampa superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": null,
+      "position": [
+        0,
+        0.787,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.735,
+        0.16,
+        0.986
+      ]
+    },
+    {
+      "id": "travas",
+      "name": "Fechos frontais",
+      "shape": "group",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.69,
+        0.495
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "alcas",
+      "name": "Alças laterais",
+      "shape": "group",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.43,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "base",
+      "name": "Chassi e proteções",
+      "shape": "group",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.1,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "grafismos",
+      "name": "Identificação",
+      "shape": "group",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.41,
+        0.482
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "p-1",
+      "name": "Vedação contínua",
+      "shape": "case",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        0,
+        -0.084,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.725,
+        0.052,
+        0.985
+      ]
+    },
+    {
+      "id": "p-2",
+      "name": "Reforço da tampa",
+      "shape": "case",
+      "material": "inset",
+      "parent": "tampa",
+      "position": [
+        0,
+        0.077,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.55,
+        0.026,
+        0.83
+      ]
+    },
+    {
+      "id": "p-3",
+      "name": "Painel central",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        0,
+        0.103,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.13,
+        0.038,
+        0.69
+      ]
+    },
+    {
+      "id": "p-4",
+      "name": "Proteção longitudinal",
+      "shape": "case",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        -0.736,
+        0.078,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.16,
+        0.115,
+        0.985
+      ]
+    },
+    {
+      "id": "p-5",
+      "name": "Inserto antiderrapante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        -0.736,
+        0.138,
+        -0.33
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.012,
+        0.19
+      ]
+    },
+    {
+      "id": "p-6",
+      "name": "Inserto antiderrapante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        -0.736,
+        0.138,
+        0.33
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.012,
+        0.19
+      ]
+    },
+    {
+      "id": "p-7",
+      "name": "Proteção longitudinal",
+      "shape": "case",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        0.736,
+        0.078,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.16,
+        0.115,
+        0.985
+      ]
+    },
+    {
+      "id": "p-8",
+      "name": "Inserto antiderrapante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        0.736,
+        0.138,
+        -0.33
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.012,
+        0.19
+      ]
+    },
+    {
+      "id": "p-9",
+      "name": "Inserto antiderrapante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        0.736,
+        0.138,
+        0.33
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.012,
+        0.19
+      ]
+    },
+    {
+      "id": "p-10",
+      "name": "Nervura superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        -0.51,
+        0.131,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.048,
+        0.042,
+        0.57
+      ]
+    },
+    {
+      "id": "p-11",
+      "name": "Nervura superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        -0.34,
+        0.131,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.048,
+        0.042,
+        0.57
+      ]
+    },
+    {
+      "id": "p-12",
+      "name": "Nervura superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        0,
+        0.131,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.048,
+        0.042,
+        0.57
+      ]
+    },
+    {
+      "id": "p-13",
+      "name": "Nervura superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        0.34,
+        0.131,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.048,
+        0.042,
+        0.57
+      ]
+    },
+    {
+      "id": "p-14",
+      "name": "Nervura superior",
+      "shape": "case",
+      "material": "olive",
+      "parent": "tampa",
+      "position": [
+        0.51,
+        0.131,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.048,
+        0.042,
+        0.57
+      ]
+    },
+    {
+      "id": "p-15",
+      "name": "Canto da tampa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        -0.72,
+        -0.007,
+        -0.501
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.205,
+        0.14,
+        0.038
+      ]
+    },
+    {
+      "id": "p-16",
+      "name": "Canto da tampa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        0.72,
+        -0.007,
+        -0.501
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.205,
+        0.14,
+        0.038
+      ]
+    },
+    {
+      "id": "p-17",
+      "name": "Faixa do vedante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        0,
+        -0.083,
+        -0.490479
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.44,
+        0.026,
+        0.021
+      ]
+    },
+    {
+      "id": "p-18",
+      "name": "Canto da tampa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        -0.72,
+        -0.007,
+        0.501
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.205,
+        0.14,
+        0.038
+      ]
+    },
+    {
+      "id": "p-19",
+      "name": "Canto da tampa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "tampa",
+      "position": [
+        0.72,
+        -0.007,
+        0.501
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.205,
+        0.14,
+        0.038
+      ]
+    },
+    {
+      "id": "p-20",
+      "name": "Faixa do vedante",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "tampa",
+      "position": [
+        0,
+        -0.083,
+        0.490479
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.44,
+        0.026,
+        0.021
+      ]
+    },
+    {
+      "id": "p-21",
+      "name": "Base reforçada",
+      "shape": "case",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        0,
+        0.011,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1.745,
+        0.122,
+        0.99
+      ]
+    },
+    {
+      "id": "p-22",
+      "name": "Pé de apoio",
+      "shape": "case",
+      "material": "rubber",
+      "parent": "base",
+      "position": [
+        -0.695,
+        -0.054,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.247,
+        0.09,
+        0.98
+      ]
+    },
+    {
+      "id": "p-23",
+      "name": "Protetor de canto",
+      "shape": "case",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.275,
+        -0.447
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.213,
+        0.5,
+        0.118
+      ]
+    },
+    {
+      "id": "p-24",
+      "name": "Aresta protetora",
+      "shape": "box",
+      "material": "inset",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.3,
+        -0.498405
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.094,
+        0.39,
+        0.028
+      ]
+    },
+    {
+      "id": "p-25",
+      "name": "Sapata externa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.046,
+        -0.48723
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.116,
+        0.061
+      ]
+    },
+    {
+      "id": "p-26",
+      "name": "Protetor de canto",
+      "shape": "case",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.275,
+        0.447
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.213,
+        0.5,
+        0.118
+      ]
+    },
+    {
+      "id": "p-27",
+      "name": "Aresta protetora",
+      "shape": "box",
+      "material": "inset",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.3,
+        0.498405
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.094,
+        0.39,
+        0.028
+      ]
+    },
+    {
+      "id": "p-28",
+      "name": "Sapata externa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        -0.695,
+        0.046,
+        0.48723
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.116,
+        0.061
+      ]
+    },
+    {
+      "id": "p-29",
+      "name": "Pé de apoio",
+      "shape": "case",
+      "material": "rubber",
+      "parent": "base",
+      "position": [
+        0.695,
+        -0.054,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.247,
+        0.09,
+        0.98
+      ]
+    },
+    {
+      "id": "p-30",
+      "name": "Protetor de canto",
+      "shape": "case",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.275,
+        -0.447
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.213,
+        0.5,
+        0.118
+      ]
+    },
+    {
+      "id": "p-31",
+      "name": "Aresta protetora",
+      "shape": "box",
+      "material": "inset",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.3,
+        -0.498405
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.094,
+        0.39,
+        0.028
+      ]
+    },
+    {
+      "id": "p-32",
+      "name": "Sapata externa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.046,
+        -0.48723
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.116,
+        0.061
+      ]
+    },
+    {
+      "id": "p-33",
+      "name": "Protetor de canto",
+      "shape": "case",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.275,
+        0.447
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.213,
+        0.5,
+        0.118
+      ]
+    },
+    {
+      "id": "p-34",
+      "name": "Aresta protetora",
+      "shape": "box",
+      "material": "inset",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.3,
+        0.498405
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.094,
+        0.39,
+        0.028
+      ]
+    },
+    {
+      "id": "p-35",
+      "name": "Sapata externa",
+      "shape": "box",
+      "material": "armor",
+      "parent": "base",
+      "position": [
+        0.695,
+        0.046,
+        0.48723
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.26,
+        0.116,
+        0.061
+      ]
+    },
+    {
+      "id": "p-36",
+      "name": "Painel rebaixado",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0,
+        0.004,
+        -0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.69,
+        0.294,
+        0.017
+      ]
+    },
+    {
+      "id": "p-37",
+      "name": "Face central",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        0,
+        0.01,
+        -0.496
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.637,
+        0.242,
+        0.016
+      ]
+    },
+    {
+      "id": "p-38",
+      "name": "Coluna de proteção",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        -0.535,
+        -0.008,
+        -0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.408,
+        0.027
+      ]
+    },
+    {
+      "id": "p-39",
+      "name": "Coluna de proteção",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0.535,
+        -0.008,
+        -0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.408,
+        0.027
+      ]
+    },
+    {
+      "id": "p-40",
+      "name": "Reforço vertical",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        -0.373,
+        -0.029,
+        -0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.046,
+        0.311,
+        0.039
+      ]
+    },
+    {
+      "id": "p-41",
+      "name": "Reforço vertical",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        0.373,
+        -0.029,
+        -0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.046,
+        0.311,
+        0.039
+      ]
+    },
+    {
+      "id": "p-42",
+      "name": "Painel rebaixado",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0,
+        0.004,
+        0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.69,
+        0.294,
+        0.017
+      ]
+    },
+    {
+      "id": "p-43",
+      "name": "Face central",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        0,
+        0.01,
+        0.496
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.637,
+        0.242,
+        0.016
+      ]
+    },
+    {
+      "id": "p-44",
+      "name": "Coluna de proteção",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        -0.535,
+        -0.008,
+        0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.408,
+        0.027
+      ]
+    },
+    {
+      "id": "p-45",
+      "name": "Coluna de proteção",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0.535,
+        -0.008,
+        0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.408,
+        0.027
+      ]
+    },
+    {
+      "id": "p-46",
+      "name": "Reforço vertical",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        -0.373,
+        -0.029,
+        0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.046,
+        0.311,
+        0.039
+      ]
+    },
+    {
+      "id": "p-47",
+      "name": "Reforço vertical",
+      "shape": "box",
+      "material": "olive",
+      "parent": "corpo",
+      "position": [
+        0.373,
+        -0.029,
+        0.484
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.046,
+        0.311,
+        0.039
+      ]
+    },
+    {
+      "id": "fecho-e",
+      "name": "Fecho esquerdo",
+      "shape": "case",
+      "material": "rubber",
+      "parent": "travas",
+      "position": [
+        -0.503,
+        -0.05,
+        0.019
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.195,
+        0.3,
+        0.047
+      ]
+    },
+    {
+      "id": "p-48",
+      "name": "Placa de aço",
+      "shape": "box",
+      "material": "steel",
+      "parent": "fecho-e",
+      "position": [
+        0,
+        0.01,
+        0.028
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.153,
+        0.247,
+        0.036
+      ]
+    },
+    {
+      "id": "p-49",
+      "name": "Abertura do fecho",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "fecho-e",
+      "position": [
+        0,
+        0.017,
+        0.05
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.09,
+        0.146,
+        0.018
+      ]
+    },
+    {
+      "id": "p-50",
+      "name": "Lingueta basculante",
+      "shape": "box",
+      "material": "steel",
+      "parent": "fecho-e",
+      "position": [
+        0,
+        -0.016,
+        0.069
+      ],
+      "rotation": [
+        -8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.127,
+        0.032
+      ]
+    },
+    {
+      "id": "p-51",
+      "name": "Pegador de pressão",
+      "shape": "box",
+      "material": "armor",
+      "parent": "fecho-e",
+      "position": [
+        0,
+        -0.043,
+        0.088
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.091,
+        0.048,
+        0.021
+      ]
+    },
+    {
+      "id": "p-52",
+      "name": "Pino articulado",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "fecho-e",
+      "position": [
+        0,
+        0.096,
+        0.057
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.047,
+        0.17,
+        0.047
+      ]
+    },
+    {
+      "id": "fecho-d",
+      "name": "Fecho direito",
+      "shape": "case",
+      "material": "rubber",
+      "parent": "travas",
+      "position": [
+        0.503,
+        -0.05,
+        0.019
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.195,
+        0.3,
+        0.047
+      ]
+    },
+    {
+      "id": "p-53",
+      "name": "Placa de aço",
+      "shape": "box",
+      "material": "steel",
+      "parent": "fecho-d",
+      "position": [
+        0,
+        0.01,
+        0.028
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.153,
+        0.247,
+        0.036
+      ]
+    },
+    {
+      "id": "p-54",
+      "name": "Abertura do fecho",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "fecho-d",
+      "position": [
+        0,
+        0.017,
+        0.05
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.09,
+        0.146,
+        0.018
+      ]
+    },
+    {
+      "id": "p-55",
+      "name": "Lingueta basculante",
+      "shape": "box",
+      "material": "steel",
+      "parent": "fecho-d",
+      "position": [
+        0,
+        -0.016,
+        0.069
+      ],
+      "rotation": [
+        -8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.116,
+        0.127,
+        0.032
+      ]
+    },
+    {
+      "id": "p-56",
+      "name": "Pegador de pressão",
+      "shape": "box",
+      "material": "armor",
+      "parent": "fecho-d",
+      "position": [
+        0,
+        -0.043,
+        0.088
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.091,
+        0.048,
+        0.021
+      ]
+    },
+    {
+      "id": "p-57",
+      "name": "Pino articulado",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "fecho-d",
+      "position": [
+        0,
+        0.096,
+        0.057
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.047,
+        0.17,
+        0.047
+      ]
+    },
+    {
+      "id": "p-58",
+      "name": "Rebaixo da alça",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "alcas",
+      "position": [
+        -0.854,
+        0.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.025,
+        0.242,
+        0.495
+      ]
+    },
+    {
+      "id": "p-59",
+      "name": "Suporte da alça",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        -0.884,
+        0.046,
+        -0.203
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.123,
+        0.164,
+        0.077
+      ]
+    },
+    {
+      "id": "p-60",
+      "name": "Suporte da alça",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        -0.884,
+        0.046,
+        0.203
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.123,
+        0.164,
+        0.077
+      ]
+    },
+    {
+      "id": "p-61",
+      "name": "Pegador lateral",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        -0.94,
+        0.029,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.079,
+        0.408
+      ]
+    },
+    {
+      "id": "p-62",
+      "name": "Eixo da alça",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "alcas",
+      "position": [
+        -0.946,
+        0.08,
+        -0.195
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.036,
+        0.019,
+        0.036
+      ]
+    },
+    {
+      "id": "p-63",
+      "name": "Eixo da alça",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "alcas",
+      "position": [
+        -0.946,
+        0.08,
+        0.195
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.036,
+        0.019,
+        0.036
+      ]
+    },
+    {
+      "id": "p-64",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        -0.854,
+        -0.161,
+        -0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "p-65",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        -0.854,
+        -0.161,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "p-66",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        -0.854,
+        -0.161,
+        0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "p-67",
+      "name": "Rebaixo da alça",
+      "shape": "box",
+      "material": "rubber",
+      "parent": "alcas",
+      "position": [
+        0.854,
+        0.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.025,
+        0.242,
+        0.495
+      ]
+    },
+    {
+      "id": "p-68",
+      "name": "Suporte da alça",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        0.884,
+        0.046,
+        -0.203
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.123,
+        0.164,
+        0.077
+      ]
+    },
+    {
+      "id": "p-69",
+      "name": "Suporte da alça",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        0.884,
+        0.046,
+        0.203
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.123,
+        0.164,
+        0.077
+      ]
+    },
+    {
+      "id": "p-70",
+      "name": "Pegador lateral",
+      "shape": "box",
+      "material": "armor",
+      "parent": "alcas",
+      "position": [
+        0.94,
+        0.029,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.068,
+        0.079,
+        0.408
+      ]
+    },
+    {
+      "id": "p-71",
+      "name": "Eixo da alça",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "alcas",
+      "position": [
+        0.946,
+        0.08,
+        -0.195
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.036,
+        0.019,
+        0.036
+      ]
+    },
+    {
+      "id": "p-72",
+      "name": "Eixo da alça",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "alcas",
+      "position": [
+        0.946,
+        0.08,
+        0.195
+      ],
+      "rotation": [
+        0,
+        0,
+        90
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.036,
+        0.019,
+        0.036
+      ]
+    },
+    {
+      "id": "p-73",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0.854,
+        -0.161,
+        -0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "p-74",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0.854,
+        -0.161,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "p-75",
+      "name": "Nervura lateral",
+      "shape": "box",
+      "material": "inset",
+      "parent": "corpo",
+      "position": [
+        0.854,
+        -0.161,
+        0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.027,
+        0.102,
+        0.052
+      ]
+    },
+    {
+      "id": "rx-id",
+      "name": "Inscrição RX-04",
+      "shape": "mesh",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        -0.206,
+        -0.037,
+        0.025
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "geometry": {
+        "positions": [
+          0.0051660000000000005,
+          0,
+          0,
+          0.0051660000000000005,
+          0.089,
+          0,
+          -0.0051660000000000005,
+          0.089,
+          0,
+          -0.0051660000000000005,
+          0,
+          0,
+          0,
+          0.083393,
+          0,
+          0.05330000000000001,
+          0.083393,
+          0,
+          0.05330000000000001,
+          0.094607,
+          0,
+          0,
+          0.094607,
+          0,
+          0.0491672,
+          0.08563579999999998,
+          0,
+          0.06146720000000001,
+          0.0678358,
+          0,
+          0.06973280000000001,
+          0.07456420000000001,
+          0,
+          0.057432800000000006,
+          0.09236420000000001,
+          0,
+          0.06043400000000001,
+          0.0712,
+          0,
+          0.06043400000000001,
+          0.05518,
+          0,
+          0.070766,
+          0.05518,
+          0,
+          0.070766,
+          0.0712,
+          0,
+          0.06237282538433385,
+          0.05955833141454707,
+          0,
+          0.050072825384333844,
+          0.04887833141454707,
+          0,
+          0.05652717461566616,
+          0.04012166858545293,
+          0,
+          0.06882717461566616,
+          0.05080166858545293,
+          0,
+          0.05330000000000001,
+          0.05010699999999999,
+          0,
+          0,
+          0.05010699999999999,
+          0,
+          0,
+          0.038893,
+          0,
+          0.05330000000000001,
+          0.038893,
+          0,
+          0.028995086596381267,
+          0.03981739716737356,
+          0,
+          0.06589508659638127,
+          -0.0037926028326264395,
+          0,
+          0.07350491340361874,
+          0.0037926028326264395,
+          0,
+          0.03660491340361874,
+          0.047402602832626435,
+          0,
+          0.0902660317304173,
+          0.08549733486836233,
+          0,
+          0.1558660317304173,
+          -0.003502665131637657,
+          0,
+          0.1639339682695827,
+          0.003502665131637657,
+          0,
+          0.09833396826958268,
+          0.09250266513163766,
+          0,
+          0.1558660317304173,
+          0.09250266513163766,
+          0,
+          0.0902660317304173,
+          0.003502665131637657,
+          0,
+          0.09833396826958268,
+          -0.003502665131637657,
+          0,
+          0.1639339682695827,
+          0.08549733486836233,
+          0,
+          0.19269999999999998,
+          0.038893,
+          0,
+          0.2296,
+          0.038893,
+          0,
+          0.2296,
+          0.05010699999999999,
+          0,
+          0.19269999999999998,
+          0.05010699999999999,
+          0,
+          0.26076,
+          -0.005607,
+          0,
+          0.30668,
+          -0.005607,
+          0,
+          0.30668,
+          0.005607,
+          0,
+          0.26076,
+          0.005607,
+          0,
+          0.3103329136316097,
+          -0.003964747722112971,
+          0,
+          0.3201729136316097,
+          0.006715252277887028,
+          0,
+          0.3128670863683903,
+          0.01464474772211297,
+          0,
+          0.30302708636839026,
+          0.003964747722112971,
+          0,
+          0.32168599999999997,
+          0.010679999999999999,
+          0,
+          0.32168599999999997,
+          0.07832,
+          0,
+          0.31135399999999996,
+          0.07832,
+          0,
+          0.31135399999999996,
+          0.010679999999999999,
+          0,
+          0.3201729136316097,
+          0.08228474772211297,
+          0,
+          0.3103329136316097,
+          0.09296474772211297,
+          0,
+          0.30302708636839026,
+          0.08503525227788702,
+          0,
+          0.3128670863683903,
+          0.07435525227788702,
+          0,
+          0.30668,
+          0.094607,
+          0,
+          0.26076,
+          0.094607,
+          0,
+          0.26076,
+          0.083393,
+          0,
+          0.30668,
+          0.083393,
+          0,
+          0.2571070863683903,
+          0.09296474772211297,
+          0,
+          0.24726708636839026,
+          0.08228474772211297,
+          0,
+          0.25457291363160967,
+          0.07435525227788702,
+          0,
+          0.2644129136316097,
+          0.08503525227788702,
+          0,
+          0.24575399999999997,
+          0.07832,
+          0,
+          0.24575399999999997,
+          0.010679999999999999,
+          0,
+          0.256086,
+          0.010679999999999999,
+          0,
+          0.256086,
+          0.07832,
+          0,
+          0.24726708636839026,
+          0.006715252277887028,
+          0,
+          0.2571070863683903,
+          -0.003964747722112971,
+          0,
+          0.2644129136316097,
+          0.003964747722112971,
+          0,
+          0.25457291363160967,
+          0.01464474772211297,
+          0,
+          0.39958599999999994,
+          0,
+          0,
+          0.39958599999999994,
+          0.089,
+          0,
+          0.38925399999999993,
+          0.089,
+          0,
+          0.38925399999999993,
+          0,
+          0,
+          0.3906512108034123,
+          0.09283485790963762,
+          0,
+          0.34145121080341223,
+          0.03587485790963761,
+          0,
+          0.34898878919658766,
+          0.02820514209036238,
+          0,
+          0.3981887891965876,
+          0.08516514209036238,
+          0,
+          0.3452199999999999,
+          0.026432999999999998,
+          0,
+          0.4132799999999999,
+          0.026432999999999998,
+          0,
+          0.4132799999999999,
+          0.037647,
+          0,
+          0.3452199999999999,
+          0.037647,
+          0
+        ],
+        "normals": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "indices": [
+          0,
+          1,
+          2,
+          0,
+          2,
+          3,
+          4,
+          5,
+          6,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          8,
+          10,
+          11,
+          12,
+          13,
+          14,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          16,
+          18,
+          19,
+          20,
+          21,
+          22,
+          20,
+          22,
+          23,
+          24,
+          25,
+          26,
+          24,
+          26,
+          27,
+          28,
+          29,
+          30,
+          28,
+          30,
+          31,
+          32,
+          33,
+          34,
+          32,
+          34,
+          35,
+          36,
+          37,
+          38,
+          36,
+          38,
+          39,
+          40,
+          41,
+          42,
+          40,
+          42,
+          43,
+          44,
+          45,
+          46,
+          44,
+          46,
+          47,
+          48,
+          49,
+          50,
+          48,
+          50,
+          51,
+          52,
+          53,
+          54,
+          52,
+          54,
+          55,
+          56,
+          57,
+          58,
+          56,
+          58,
+          59,
+          60,
+          61,
+          62,
+          60,
+          62,
+          63,
+          64,
+          65,
+          66,
+          64,
+          66,
+          67,
+          68,
+          69,
+          70,
+          68,
+          70,
+          71,
+          72,
+          73,
+          74,
+          72,
+          74,
+          75,
+          76,
+          77,
+          78,
+          76,
+          78,
+          79,
+          80,
+          81,
+          82,
+          80,
+          82,
+          83
+        ]
+      }
+    },
+    {
+      "id": "p-76",
+      "name": "Marca de sinalização",
+      "shape": "box",
+      "material": "signal",
+      "parent": "tampa",
+      "position": [
+        -0.123,
+        0.022,
+        0.497
+      ],
+      "rotation": [
+        0,
+        0,
+        -29
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.024,
+        0.077,
+        0.008
+      ]
+    },
+    {
+      "id": "p-77",
+      "name": "Marca de sinalização",
+      "shape": "box",
+      "material": "signal",
+      "parent": "tampa",
+      "position": [
+        -0.078,
+        0.022,
+        0.497
+      ],
+      "rotation": [
+        0,
+        0,
+        -29
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.024,
+        0.077,
+        0.008
+      ]
+    },
+    {
+      "id": "p-78",
+      "name": "Marca de sinalização",
+      "shape": "box",
+      "material": "signal",
+      "parent": "tampa",
+      "position": [
+        -0.033,
+        0.022,
+        0.497
+      ],
+      "rotation": [
+        0,
+        0,
+        -29
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.024,
+        0.077,
+        0.008
+      ]
+    },
+    {
+      "id": "p-79",
+      "name": "Marca de sinalização",
+      "shape": "box",
+      "material": "signal",
+      "parent": "tampa",
+      "position": [
+        0.012,
+        0.022,
+        0.497
+      ],
+      "rotation": [
+        0,
+        0,
+        -29
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.024,
+        0.077,
+        0.008
+      ]
+    },
+    {
+      "id": "p-80",
+      "name": "Rebite de fixação",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "grafismos",
+      "position": [
+        -0.289,
+        -0.097,
+        0.025
+      ],
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.019,
+        0.009,
+        0.019
+      ]
+    },
+    {
+      "id": "p-81",
+      "name": "Rebite de fixação",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "grafismos",
+      "position": [
+        -0.289,
+        0.103,
+        0.025
+      ],
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.019,
+        0.009,
+        0.019
+      ]
+    },
+    {
+      "id": "p-82",
+      "name": "Rebite de fixação",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "grafismos",
+      "position": [
+        0.289,
+        -0.097,
+        0.025
+      ],
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.019,
+        0.009,
+        0.019
+      ]
+    },
+    {
+      "id": "p-83",
+      "name": "Rebite de fixação",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "grafismos",
+      "position": [
+        0.289,
+        0.103,
+        0.025
+      ],
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.019,
+        0.009,
+        0.019
+      ]
+    },
+    {
+      "id": "p-84",
+      "name": "Código de identificação",
+      "shape": "box",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        0.14,
+        -0.073,
+        0.024
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.006,
+        0.031,
+        0.003
+      ]
+    },
+    {
+      "id": "p-85",
+      "name": "Código de identificação",
+      "shape": "box",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        0.159,
+        -0.073,
+        0.024
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.012,
+        0.031,
+        0.003
+      ]
+    },
+    {
+      "id": "p-86",
+      "name": "Código de identificação",
+      "shape": "box",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        0.178,
+        -0.073,
+        0.024
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.006,
+        0.031,
+        0.003
+      ]
+    },
+    {
+      "id": "p-87",
+      "name": "Código de identificação",
+      "shape": "box",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        0.197,
+        -0.073,
+        0.024
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.012,
+        0.031,
+        0.003
+      ]
+    },
+    {
+      "id": "p-88",
+      "name": "Código de identificação",
+      "shape": "box",
+      "material": "ink",
+      "parent": "grafismos",
+      "position": [
+        0.216,
+        -0.073,
+        0.024
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.006,
+        0.031,
+        0.003
+      ]
+    },
+    {
+      "id": "p-89",
+      "name": "Parafuso da tampa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "tampa",
+      "position": [
+        -0.56,
+        0.101,
+        -0.302
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.03,
+        0.014,
+        0.03
+      ]
+    },
+    {
+      "id": "p-90",
+      "name": "Parafuso da tampa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "tampa",
+      "position": [
+        -0.56,
+        0.101,
+        0.302
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.03,
+        0.014,
+        0.03
+      ]
+    },
+    {
+      "id": "p-91",
+      "name": "Parafuso da tampa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "tampa",
+      "position": [
+        0.56,
+        0.101,
+        -0.302
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.03,
+        0.014,
+        0.03
+      ]
+    },
+    {
+      "id": "p-92",
+      "name": "Parafuso da tampa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "tampa",
+      "position": [
+        0.56,
+        0.101,
+        0.302
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.03,
+        0.014,
+        0.03
+      ]
+    }
+  ]
+}

@@ -1,0 +1,442 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Célula de energia",
+  "units": "meters",
+  "materials": [
+    {
+      "id": "armor",
+      "name": "Grafite moldado",
+      "color": "#343d39",
+      "metalness": 0.27,
+      "roughness": 0.57
+    },
+    {
+      "id": "steel",
+      "name": "Aço escovado",
+      "color": "#b5b9ac",
+      "metalness": 0.78,
+      "roughness": 0.33
+    },
+    {
+      "id": "signal",
+      "name": "Amarelo sinal",
+      "color": "#ded956",
+      "metalness": 0.22,
+      "roughness": 0.45
+    },
+    {
+      "id": "inset",
+      "name": "Oliva escuro",
+      "color": "#566344",
+      "metalness": 0.27,
+      "roughness": 0.54
+    }
+  ],
+  "parts": [
+    {
+      "id": "nucleo",
+      "name": "Reservatório",
+      "shape": "cylinder",
+      "material": "inset",
+      "parent": null,
+      "position": [
+        0,
+        0.51,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.58,
+        0.84,
+        0.58
+      ]
+    },
+    {
+      "id": "pe",
+      "name": "Base octogonal",
+      "shape": "case",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.09,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.71,
+        0.17,
+        0.71
+      ]
+    },
+    {
+      "id": "tampa",
+      "name": "Cobertura",
+      "shape": "case",
+      "material": "armor",
+      "parent": null,
+      "position": [
+        0,
+        0.95,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.71,
+        0.17,
+        0.71
+      ]
+    },
+    {
+      "id": "p-1",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        0.29,
+        0.01,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-2",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        0.205061,
+        0.01,
+        0.205061
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-3",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        0,
+        0.01,
+        0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-4",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        -0.205061,
+        0.01,
+        0.205061
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-5",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        -0.29,
+        0.01,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-6",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        -0.205061,
+        0.01,
+        -0.205061
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-7",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        0,
+        0.01,
+        -0.29
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-8",
+      "name": "Haste externa",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "nucleo",
+      "position": [
+        0.205061,
+        0.01,
+        -0.205061
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.031,
+        0.79,
+        0.031
+      ]
+    },
+    {
+      "id": "p-9",
+      "name": "Anel de carga",
+      "shape": "cylinder",
+      "material": "signal",
+      "parent": "nucleo",
+      "position": [
+        0,
+        -0.17,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.592,
+        0.053,
+        0.592
+      ]
+    },
+    {
+      "id": "p-10",
+      "name": "Anel de carga",
+      "shape": "cylinder",
+      "material": "signal",
+      "parent": "nucleo",
+      "position": [
+        0,
+        0.02,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.592,
+        0.053,
+        0.592
+      ]
+    },
+    {
+      "id": "p-11",
+      "name": "Anel de carga",
+      "shape": "cylinder",
+      "material": "signal",
+      "parent": "nucleo",
+      "position": [
+        0,
+        0.21,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.592,
+        0.053,
+        0.592
+      ]
+    },
+    {
+      "id": "p-12",
+      "name": "Terminal",
+      "shape": "cylinder",
+      "material": "steel",
+      "parent": "tampa",
+      "position": [
+        0,
+        0.115,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "size": [
+        0.31,
+        0.075,
+        0.31
+      ]
+    }
+  ]
+}

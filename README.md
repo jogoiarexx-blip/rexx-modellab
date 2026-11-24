@@ -136,3 +136,7 @@ Nove clips procedurais, prévias e exportação GLB animado: [documentação](do
 ## Texturas e UV 0.13
 
 Auditoria UV, ajustes, otimização JPEG, atlas e mapas auxiliares: [documentação](docs/TEXTURES.md).
+
+## MCP local 0.14
+
+Servidor stdio para agentes, com workspace restrito e prévias PNG: [configuração e ferramentas](docs/MCP.md).

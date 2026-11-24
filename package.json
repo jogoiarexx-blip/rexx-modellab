@@ -1,10 +1,10 @@
 {
   "name": "rexx-modellab",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": true,
   "type": "module",
   "bin": {"modellab":"./cli/modellab.js"},
-  "scripts": {"test":"node --test","build":"node scripts/build.mjs","start":"node scripts/serve.mjs"},
+  "scripts": {"test":"node --test","build":"node scripts/build.mjs","start":"node scripts/serve.mjs","mcp":"node mcp/server.js"},
   "engines":{"node":">=20"},
   "devDependencies":{"esbuild":"0.25.12","three":"0.187.0"}
 }

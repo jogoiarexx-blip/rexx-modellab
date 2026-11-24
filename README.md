@@ -144,3 +144,7 @@ Servidor stdio para agentes, com workspace restrito e prévias PNG: [configuraç
 ## REXX-TRAIN-08
 
 Vestuário procedural em relevo e acabamento: [documentação](docs/TRAIN-08-CLOTHING.md).
+
+## REXX-TRAIN-10 — fluxo integrado
+
+Gere o pacote de personagem (malha, rig, movimentos e LODs) a partir de um perfil fotográfico com `node cli/modellab.js character original.modellab.json --out personagem-export`. Consulte [receitas e limitações](docs/CHARACTER-PIPELINE.md). O servidor MCP local oferece também a ferramenta `build_character`.

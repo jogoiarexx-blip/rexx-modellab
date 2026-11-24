@@ -11,6 +11,7 @@ import { autoRig, adjustRig, previewRig } from "../src/rig.js";
 import { parseMotionFBX } from "./fbx-motion.js";
 import { retargetMotion } from "../src/retarget.js";
 import { auditViews } from "../src/view-audit.js";
+import { buildCharacterPackage, characterPackageEntries } from "../src/character-pipeline.js";
 import { exportLOD, LOD_PROFILES } from "../src/lod-training.js";
 import { optimizeProject } from "../src/mesh-optimization.js";
 import { buildHandMesh, gripPose } from "../src/hand-mesh.js";
@@ -67,6 +68,7 @@ const help = `REXX ModelLab 0.14 · CLI
   node cli/modellab.js view-audit personagem.modellab.json [--id character] [--report vistas.json]
   photo aceita --alignment alinhamento.json.
   node cli/modellab.js lod projeto.modellab.json --out pasta [--rig personagem.rig.json] [--animations idle,walk,run] [--motion corrida.clip.json] [--ops lod.json]
+  node cli/modellab.js character personagem.modellab.json --out nova-pasta [--ops receita.json] [--motion corrida.fbx]
   node cli/modellab.js --help
 
 Caminhos são relativos ao diretório atual. O projeto fonte é preservado.
@@ -95,11 +97,11 @@ async function run() {
     console.log(help);
     return;
   }
-  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing", "view-audit", "lod"].includes(command)) throw Error("Comando desconhecido. Use --help.");
+  if (!["init", "build", "validate", "import", "new", "photo", "edit", "inspect", "render", "refine", "rig", "rig-edit", "rig-preview", "pose-preview", "animation-preview", "animations", "reference", "uv-audit", "texture", "material-maps", "hands-mesh", "grip", "optimize", "retarget", "clothing", "view-audit", "lod", "character"].includes(command)) throw Error("Comando desconhecido. Use --help.");
   if(command==="animations"){if(args.length)throw Error("animations não aceita argumentos.");log(animationNames().map(name=>{const c=getClip(name);return {name,loop:c.loop,duration:c.frames.at(-1).time};}));return;}
   let alignmentFile, motionFile, fps=30, yaw=0, optimizeId, strength=1,hands='basic', preset, explicitDetail, animationList, clip="walk", time=0, rigFile, size=512, views, back, side, facing, backContour, sideContour, volume=1, detail=.16, id='character';
   let input, out, report, name, height=1.8, depth, contour, ops, template = "caixa", dry = false;
-  const allowed = { lod:["--out","--rig","--animations","--motion","--ops"], "view-audit":["--id","--report"], clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset","--alignment"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
+  const allowed = { character:["--out","--ops","--motion"], lod:["--out","--rig","--animations","--motion","--ops"], "view-audit":["--id","--report"], clothing:["--out","--id","--ops","--report"],retarget:["--rig","--out","--report","--fps","--yaw","--name"], optimize:["--id","--preset","--rig","--out","--ops","--report"], "hands-mesh":["--rig","--out","--ops","--report"],grip:["--out","--strength"], init: ["--template", "--out"], build: ["--out", "--report", "--dry-run", "--rig", "--animations","--preset","--motion"], reference:["--preset","--report"],"uv-audit":["--report"],texture:["--out","--preset","--ops","--report"],"material-maps":["--out","--size"], validate: ["--report"], import: ["--out"], new:["--out","--name"], photo:["--out","--name","--height","--depth","--contour","--back","--side","--facing","--back-contour","--side-contour","--volume","--detail","--preset","--alignment"], edit:["--out","--ops"], inspect:["--report"],render:["--out","--size","--views"],refine:["--out","--id","--ops"],rig:["--out","--id","--ops","--hands"],"rig-edit":["--out","--ops"],"rig-preview":["--out","--rig","--size","--views"],"pose-preview":["--out","--rig","--ops","--size","--views"],"animation-preview":["--out","--rig","--clip","--time","--size","--views"] }[command];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--") && !input) {
@@ -148,6 +150,16 @@ async function run() {
   if (!out && !["validate","inspect","reference","uv-audit","view-audit"].includes(command) && !dry) throw Error("Informe --out.");
   const paths = [input, out, report, ops, contour, back, side, backContour, sideContour, rigFile, motionFile, alignmentFile].filter(Boolean).map(resolvePath);
   if (new Set(paths).size !== paths.length) throw Error("Entrada, relatório e saída precisam ter caminhos diferentes.");
+  if(command==="character"){
+    const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
+    let motion;
+    if(motionFile){if((await stat(motionFile)).size>128*1024*1024)throw Error("FBX maior que 128 MiB.");motion=parseMotionFBX(await readFile(motionFile));}
+    const result=await buildCharacterPackage(p,options,motion),entries=characterPackageEntries(result);
+    // New directory only: never replace an existing package or input.
+    await mkdir(dirname(resolve(out)),{recursive:true});await mkdir(resolve(out));
+    for(const entry of entries)await atomic(resolve(out,entry.file),entry.data);
+    log(result.manifest);return;
+  }
   if(command==="clothing"){
     const p=JSON.parse((await read(input)).toString("utf8")),options=ops?JSON.parse((await read(ops)).toString("utf8")):{};
     const result=trainClothing(p,id,options);

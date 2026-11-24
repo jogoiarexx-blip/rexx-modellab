@@ -15,6 +15,8 @@ import {previewPose,exportSkinnedGLB,verifySkinnedGLB,hasSkin} from '../src/skin
 import {exportGLB,verifyGLB} from '../src/format.js';
 import {animationNames,exportAnimatedGLB,previewAnimation} from '../src/animation.js';
 import {auditUV,editTextures} from '../src/texture.js';
+import {buildCharacterPackage,characterPackageEntries} from '../src/character-pipeline.js';
+import {parseMotionFBX} from '../cli/fbx-motion.js';
 import {trainClothing} from '../src/clothing-training.js';
 import {refineCharacter} from '../src/refine.js';
 
@@ -121,6 +123,18 @@ define('refine_character','Converte perfil em mesh com volumes regionais ajustad
 define('train_clothing','Aplica relevo e acabamento procedural de roupas ao perfil humanoide original.',{project,id:str('ID da peça'),options:obj('Estilo suit, field, armor; strength, tint, tintStrength, features, refine'),output},['project','output'],true,async(w,a)=>{
  const r=trainClothing(await parse(w,a.project),a.id??'character',a.options??{});
  return resultText({...await save(w,a.output,r.project),report:r.report});
+});
+define('build_character','Gera pacote completo de personagem a partir do perfil fotográfico; use prefixo novo. Manifesto salvo por último.',{project,prefix:str('Prefixo simples e exclusivo',{maxLength:70}),options:obj('Receita integrada: refine, clothing, hands, handMesh, joints, animations, levels, maxBytes, retarget'),motion:file('FBX opcional no workspace (até 24 MiB)')},['project','prefix'],true,async(w,a)=>{
+ if(!validName(a.prefix))throw Error('Prefixo inválido.');
+ const p=await parse(w,a.project),motion=a.motion?parseMotionFBX(await w.read(a.motion)):undefined;
+ const result=await buildCharacterPackage(p,a.options??{},motion),entries=characterPackageEntries(result);
+ const names=entries.map(e=>a.prefix+'-'+e.file);
+ if(names.some(n=>!validName(n)))throw Error('Nome de saída inválido.');
+ const existing=new Set((await w.list()).map(f=>f.file));if(names.some(n=>existing.has(n)))throw Error('Escolha outro prefixo: saída já existe.');
+ const saved=[];
+ try{for(let i=0;i<entries.length;i++)saved.push(await w.write(names[i],entries[i].data));}
+ catch(e){throw Error('Pacote incompleto; arquivos salvos: '+saved.map(f=>f.file).join(', ')+'; '+e.message);}
+ return resultText({files:saved,manifest:result.manifest});
 });
 define('audit_uv','Diagnóstico de UV e texturas.',{project},['project'],false,async(w,a)=>resultText(auditUV(await parse(w,a.project))));
 define('edit_textures','Otimiza JPEG e permite ajustes UV e atlas em cópia.',{project,preset,options:obj('Opções de editTextures'),output},['project','output'],true,async(w,a)=>{

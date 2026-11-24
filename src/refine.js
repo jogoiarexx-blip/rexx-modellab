@@ -1,4 +1,5 @@
 // Refinamento opcional de volume por região. Exporta uma cópia mesh editável.
+import {anatomicalDepth,currentDepthEnvelope,validateAnatomyOptions} from './anatomy-training.js';
 import {buildScene,validate,serializeProject} from './model.js';
 import {anatomy} from './silhouette.js';
 import {bounds} from './profile.js';
@@ -7,7 +8,9 @@ const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 export function refineCharacter(source,id,options={}){
   const project=structuredClone(validate(source)),part=project.parts.find(p=>p.id===id);
   if(part?.profile?.form!=='humanoid'||part.shape!=='profile')throw Error('Escolha um perfil humanoide.');
-  const factors={head:1,torso:1,arms:1,legs:1,feet:1,...options};
+  const {anatomyStyle,anatomyStrength=.6,...regional}=options;
+  validateAnatomyOptions(anatomyStyle,anatomyStrength);
+  const factors={head:1,torso:1,arms:1,legs:1,feet:1,...regional};
   for(const [k,v] of Object.entries(factors))if(!['head','torso','arms','legs','feet'].includes(k)||!Number.isFinite(v)||v<.65||v>1.4)throw Error('Fator regional inválido: '+k);
   const scene=buildScene(project,{textures:false});
   try{
@@ -15,6 +18,8 @@ export function refineCharacter(source,id,options={}){
     const info=anatomy(part.profile.points),box=bounds(part.profile.points),chest=(info?.chestWidth??box.width*.31)/box.width;
     const armTop=info?.armTop??.18,armBottom=info?.armBottom??.34;
     const positions=[],texcoords=[];
+    const center=((info?.center??(box.left+box.width*.5))-box.left)/box.width-.5;
+    const depthEnvelope=anatomyStyle?currentDepthEnvelope(p,part.size[1],part.size[0],center*part.size[0]):null;
     // Pares frente/costas compartilham XY; o centro local de profundidade é preservado.
     const half=p.count/2;
     if(!Number.isInteger(half))throw Error('Topologia de personagem não reconhecida.');
@@ -27,6 +32,7 @@ export function refineCharacter(source,id,options={}){
       factor+=(factors.legs-factor)*legs;
       factor+=(factors.feet-factor)*feet;
       factor+=(factors.arms-factor)*arms;
+      if(anatomyStyle)factor*=anatomicalDepth({row,x:(x/part.size[0]-center)/Math.max(.001,chest*.5),arms,front:i<half,style:anatomyStyle,strength:anatomyStrength,currentDepth:depthEnvelope,sideCalibrated:!!part.profile.side});
       positions.push(x,y,mid+(z-mid)*factor);
       texcoords.push(uv.getX(i),uv.getY(i));
     }
